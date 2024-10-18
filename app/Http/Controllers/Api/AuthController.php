@@ -25,10 +25,13 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'username' => 'required',
             'password' => 'required',
+        ], [
+            'username.required' => 'Username is required',
+            'password.required' => 'Password is required',
         ]);
 
         if ($validator->fails()) {
-            return $this->generateResponse('error', $validator->errors(), null, 400);
+            return $this->generateResponse('error', $validator->errors()->first(), null, 400);
         }
 
         $customer = Customer::where('username', $request->username)->first();
@@ -46,6 +49,7 @@ class AuthController extends Controller
         } else {
             return $this->generateResponse('success', 'Login success', ['token' => $token], 200);
         }
+
     }
 
 
