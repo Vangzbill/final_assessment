@@ -50,5 +50,5 @@ class Customer extends Authenticatable implements JWTSubject
         'email_verified_at',
     ];
 
-    
+    public $timestamps = false;
 }

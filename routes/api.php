@@ -9,5 +9,9 @@ use Illuminate\Support\Facades\Route;
 // })->middleware('auth:sanctum');
 
 Route::prefix('auth')->group(function () {
+    Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
+    Route::middleware('jwt.verify')->get('me', [AuthController::class, 'me']);
+    Route::middleware('jwt.verify')->post('logout', [AuthController::class, 'logout']);
+    Route::middleware('jwt.verify')->post('change-password', [AuthController::class, 'changePassword']);
 });
