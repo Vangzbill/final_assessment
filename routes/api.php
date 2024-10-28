@@ -15,3 +15,7 @@ Route::prefix('auth')->group(function () {
     Route::middleware('jwt.verify')->post('logout', [AuthController::class, 'logout']);
     Route::middleware('jwt.verify')->post('change-password', [AuthController::class, 'changePassword']);
 });
+
+Route::prefix('product')->group(function () {
+    Route::get('/', 'ProductController@index');
+});
