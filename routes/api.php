@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\OtpController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -21,3 +22,5 @@ Route::prefix('product')->group(function () {
     Route::get('/', [ProductController::class, 'index']);
     Route::get('/{id}', [ProductController::class, 'show']);
 });
+
+Route::post('otp/send', [OtpController::class, 'send']);

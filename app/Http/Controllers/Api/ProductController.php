@@ -53,4 +53,6 @@ class ProductController extends Controller
             return $this->generateResponse('error', $e->getMessage(), null, 500);
         }
     }
+
+    
 }
