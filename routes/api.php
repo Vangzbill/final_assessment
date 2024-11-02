@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\OtpController;
 use Illuminate\Http\Request;
@@ -24,3 +25,13 @@ Route::prefix('product')->group(function () {
 });
 
 Route::post('otp/send', [OtpController::class, 'send']);
+
+Route::middleware('jwt.verify')->prefix('order')->group(function () {
+    Route::post('add-cp', [OrderController::class, 'addCp']);
+    Route::post('create', [OrderController::class, 'create']);
+    Route::get('history', [OrderController::class, 'history']);
+    Route::get('detail/{id}', [OrderController::class, 'detail']);
+    Route::post('cancel/{id}', [OrderController::class, 'cancel']);
+    Route::post('payment/{id}', [OrderController::class, 'payment']);
+    Route::post('snap/callback', [OrderController::class, 'snapCallback']);
+});
