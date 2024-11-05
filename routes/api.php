@@ -25,6 +25,7 @@ Route::prefix('product')->group(function () {
 });
 
 Route::post('otp/send', [OtpController::class, 'send']);
+Route::post('otp/verify', [OtpController::class, 'verifyOtp']);
 
 Route::middleware('jwt.verify')->prefix('order')->group(function () {
     Route::post('add-cp', [OrderController::class, 'addCp']);

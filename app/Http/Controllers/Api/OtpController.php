@@ -3,110 +3,45 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\Otp;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class OtpController extends Controller
 {
-    public function send(Request $request)
+    private function generateResponse($statusMessage, $message, $data = null, $statusCode = 200)
     {
-        $request->validate([
-            'email' => 'required|email'
-        ]);
-
-        $otp = rand(100000, 999999);
-        $expiresAt = now()->addMinutes(5);
-
-        $otp = Otp::create([
-            'email' => $request->email,
-            'otp' => $otp,
-            'expires_at' => $expiresAt
-        ]);
-
         return response()->json([
-            'status' => 'success',
-            'message' => 'OTP sent successfully',
-            'data' => $otp
-        ]);
+            'status' => $statusMessage,
+            'message' => $message,
+            'data' => $data,
+        ], $statusCode);
     }
 
-    public function verify(Request $request)
+    public function verifyOtp(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'otp' => 'required|numeric'
+        $validator = Validator::make($request->all(), [
+            'email_perusahaan' => 'required|email|exists:customers,email_perusahaan',
+            'otp_code' => 'required|integer',
         ]);
 
-        $otp = Otp::valid($request->email, $request->otp)->first();
-
-        if ($otp) {
-            $otp->update(['is_verified' => true]);
-            return response()->json([
-                'status' => 'success',
-                'message' => 'OTP verified successfully'
-            ]);
-        } else {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Invalid OTP'
-            ], 400);
+        if ($validator->fails()) {
+            return $this->generateResponse('error', $validator->errors()->first(), null, 422);
         }
-    }
 
-    public function resend(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email'
-        ]);
-
-        $otp = Otp::where('email', $request->email)
-            ->where('expires_at', '>=', now())
-            ->where('is_verified', false)
+        $customer = Customer::where('email_perusahaan', $request->email_perusahaan)
+            ->where('otp_code', $request->otp_code)
             ->first();
 
-        if ($otp) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'OTP still valid'
-            ], 400);
+        if (!$customer) {
+            return $this->generateResponse('error', 'OTP is incorrect', null, 400);
         }
 
-        $otp = Otp::create([
-            'email' => $request->email,
-            'otp' => rand(100000, 999999),
-            'expires_at' => now()->addMinutes(5)
-        ]);
+        $customer->email_verified_at = now();
+        $customer->otp_code = null;
+        $customer->save();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'OTP sent successfully',
-            'data' => $otp
-        ]);
+        return $this->generateResponse('success', 'Email verified successfully', $customer, 200);
     }
-
-    public function check(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email',
-            'otp' => 'required|numeric'
-        ]);
-
-        $otp = Otp::where('email', $request->email)
-            ->where('otp', $request->otp)
-            ->where('expires_at', '>=', now())
-            ->first();
-
-        if ($otp) {
-            return response()->json([
-                'status' => 'success',
-                'message' => 'OTP valid'
-            ]);
-        } else {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Invalid OTP'
-            ], 400);
-        }
-    }
-
 }

@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreRegisterData;
+use App\Mail\SendOtpMail;
 use App\Models\Customer;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -167,9 +169,11 @@ class AuthController extends Controller
         $customer->kota_id = $request->kota_id;
         $customer->kecamatan_id = $request->kecamatan_id;
         $customer->kelurahan_id = $request->kelurahan_id;
+        $customer->otp_code = rand(100000, 999999);
 
         if ($customer->save()) {
-            return $this->generateResponse('success', 'Register success', $customer, 201);
+            Mail::to($customer->email_perusahaan)->send(new SendOtpMail($customer->otp_code));
+            return $this->generateResponse('success', 'Register success. Please check your email for OTP', $customer, 201);
         } else {
             return $this->generateResponse('error', 'Register failed', null, 400);
         }
