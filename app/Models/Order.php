@@ -58,6 +58,38 @@ class Order extends Model
                 'tanggal' => Carbon::now(),
             ]);
 
+            for($i = 0; $i < 2; $i++) {
+                $lastInvoice = ProformaInvoice::where('order_id', $order->id)->orderBy('id', 'desc')->first();
+                $proforma_invoice = ProformaInvoice::create([
+                    'order_id' => $order->id,
+                    'unique_invoice' => 'INV' . $order->id . '-' . ($lastInvoice ? $lastInvoice->id + 1 : 1),
+                    'tanggal_proforma' => Carbon::now(),
+                    'tanggal_jatuh_tempo' => Carbon::now()->addDays(10),
+                ]);
+
+                if($i == 0){
+                    $proforma_invoice_id_perangkat = $proforma_invoice->id;
+                } else {
+                    $proforma_invoice_id_layanan = $proforma_invoice->id;
+                }
+            }
+
+            foreach($request->product['m_produk_id'] as $product) {
+                ProformaInvoiceItem::create([
+                    'proforma_invoice_id' => $proforma_invoice_id_perangkat,
+                    'm_produk_id' => $product['m_produk_id'],
+                    'quantity' => $product['quantity'],
+                ]);
+            }
+
+            foreach($request->product['m_layanan_id'] as $product) {
+                ProformaInvoiceItem::create([
+                    'proforma_invoice_id' => $proforma_invoice_id_layanan,
+                    'm_layanan_id' => $product['m_layanan_id'],
+                    'quantity' => $product['quantity'],
+                ]);
+            }
+
             if(!$order) {
                 DB::rollBack();
                 return false;

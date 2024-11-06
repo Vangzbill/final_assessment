@@ -28,7 +28,7 @@ class SendOtpMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'OTP Verification: Please do not reply to this email',
+            subject: 'Your OTP Verification Code',
         );
     }
 

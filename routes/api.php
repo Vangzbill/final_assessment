@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\OtpController;
+use App\Http\Controllers\Api\RegionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -35,4 +36,11 @@ Route::middleware('jwt.verify')->prefix('order')->group(function () {
     Route::post('cancel/{id}', [OrderController::class, 'cancel']);
     Route::post('payment/{id}', [OrderController::class, 'payment']);
     Route::post('snap/callback', [OrderController::class, 'snapCallback']);
+});
+
+Route::prefix('wilayah')->group(function () {
+    Route::get('provinsi', [RegionController::class, 'provinsi']);
+    Route::get('kabupaten/{id}', [RegionController::class, 'kabupaten']);
+    Route::get('kecamatan/{id}', [RegionController::class, 'kecamatan']);
+    Route::get('kelurahan/{id}', [RegionController::class, 'kelurahan']);
 });
