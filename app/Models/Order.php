@@ -45,52 +45,62 @@ class Order extends Model
         return $this->belongsTo(CpCustomer::class, 'cp_customer_id', 'id');
     }
 
-    public static function createOrder($request)
+    public static function createOrder($userId, $request)
     {
         DB::beginTransaction();
         try {
-            $order = Order::create($request->all());
+            $order = Order::create([
+                'customer_id' => $userId,
+                'layanan_id' => $request['product'][0]['layanan_id'],
+                'alamat_customer_id' => $request['alamat_customer_id'],
+                'cp_customer_id' => $request['cp_customer_id'],
+                'quantity' => 1,
+                'total_harga' => 0,
+                'order_date' => Carbon::now(),
+                'unique_order' => 'ORD' . $userId . '-' . Carbon::now()->format('YmdHis'),
+            ]);
+
             OrderStatusHistory::create([
-                'user_id' => $request->customer_id,
+                'user_id' => $userId,
                 'order_id' => $order->id,
                 'status_id' => 1,
                 'keterangan' => 'Order created',
                 'tanggal' => Carbon::now(),
             ]);
 
-            for($i = 0; $i < 2; $i++) {
+            for ($i = 0; $i < 2; $i++) {
                 $lastInvoice = ProformaInvoice::where('order_id', $order->id)->orderBy('id', 'desc')->first();
                 $proforma_invoice = ProformaInvoice::create([
                     'order_id' => $order->id,
-                    'unique_invoice' => 'INV' . $order->id . '-' . ($lastInvoice ? $lastInvoice->id + 1 : 1),
+                    'no_proforma_invoice' => 'INV' . $order->id . '-' . ($lastInvoice ? $lastInvoice->id + 1 : 1),
                     'tanggal_proforma' => Carbon::now(),
                     'tanggal_jatuh_tempo' => Carbon::now()->addDays(10),
                 ]);
 
-                if($i == 0){
+                if ($i == 0) {
                     $proforma_invoice_id_perangkat = $proforma_invoice->id;
                 } else {
                     $proforma_invoice_id_layanan = $proforma_invoice->id;
                 }
             }
 
-            foreach($request->product['m_produk_id'] as $product) {
+            foreach ($request['product'] as $product) {
                 ProformaInvoiceItem::create([
+                    'order_id' => $order->id,
                     'proforma_invoice_id' => $proforma_invoice_id_perangkat,
-                    'm_produk_id' => $product['m_produk_id'],
+                    'produk_id' => $product['produk_id'],
                     'quantity' => $product['quantity'],
                 ]);
-            }
 
-            foreach($request->product['m_layanan_id'] as $product) {
                 ProformaInvoiceItem::create([
+                    'order_id' => $order->id,
                     'proforma_invoice_id' => $proforma_invoice_id_layanan,
-                    'm_layanan_id' => $product['m_layanan_id'],
+                    'layanan_id' => $product['layanan_id'],
                     'quantity' => $product['quantity'],
                 ]);
             }
 
-            if(!$order) {
+            if (!$order) {
                 DB::rollBack();
                 return false;
             }
@@ -101,6 +111,6 @@ class Order extends Model
             DB::rollBack();
             return $e->getMessage();
         }
-
     }
+
 }

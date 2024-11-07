@@ -61,28 +61,22 @@ class OrderController extends Controller
 
     private function validateOrder($request){
         Validator::make($request->all(), [
-            'customer_id' => ['required', 'exists:tbl_customer,id'],
-            'product.*.m_produk_id' => ['required', 'exists:tbl_m_produk,id'],
-            'product.*.m_layanan_id' => ['required', 'exists:tbl_m_layanan,id'],
+            'product.*.produk_id' => ['required', 'exists:tbl_produk,id'],
+            'product.*.layanan_id' => ['required', 'exists:tbl_layanan,id'],
             'product.*.quantity' => ['required', 'integer'],
-            'alamat_customer_id' => ['required', 'exists:tbl_alamat_customer,id'],
+            'alamat_customer_id' => ['required', 'exists:tbl_alamat,id'],
             'cp_customer_id' => ['required', 'exists:tbl_cp_customer,id'],
-            'quantity' => ['required', 'integer'],
         ], [
-            'customer_id.required' => 'Customer ID is required',
-            'customer_id.exists' => 'Customer ID not found',
-            'product.*.m_produk_id.required' => 'Product ID is required',
-            'product.*.m_produk_id.exists' => 'Product ID not found',
-            'product.*.m_layanan_id.required' => 'Service ID is required',
-            'product.*.m_layanan_id.exists' => 'Service ID not found',
+            'product.*.produk_id.required' => 'Product ID is required',
+            'product.*.produk_id.exists' => 'Product ID not found',
+            'product.*.layanan_id.required' => 'Service ID is required',
+            'product.*.layanan_id.exists' => 'Service ID not found',
             'product.*.quantity.required' => 'Quantity is required',
             'product.*.quantity.integer' => 'Quantity must be an integer',
             'alamat_customer_id.required' => 'Customer Address ID is required',
             'alamat_customer_id.exists' => 'Customer Address ID not found',
             'cp_customer_id.required' => 'CP Customer ID is required',
             'cp_customer_id.exists' => 'CP Customer ID not found',
-            'quantity.required' => 'Quantity is required',
-            'quantity.integer' => 'Quantity must be an integer',
         ])->validate();
     }
 
@@ -90,11 +84,11 @@ class OrderController extends Controller
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
-
             $request->merge(['customer_id' => $user->id]);
-
+            $user_id = $user->id;
             $this->validateOrder($request);
-            $order = Order::createOrder($request->all());
+            $data = $request->all();
+            $order = Order::createOrder($user_id ,$data);
             if(!$order) {
                 return $this->generateResponse('error', 'Failed to add data', null, 500);
             }
