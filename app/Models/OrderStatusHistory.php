@@ -17,4 +17,9 @@ class OrderStatusHistory extends Model
     ];
 
     public $timestamps = false;
+
+    public function status()
+    {
+        return $this->belongsTo(StatusOrder::class, 'status_id', 'id');
+    }
 }

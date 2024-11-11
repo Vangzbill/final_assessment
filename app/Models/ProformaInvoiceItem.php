@@ -22,4 +22,19 @@ class ProformaInvoiceItem extends Model
         'quantity',
         'produk_id',
     ];
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class, 'order_id', 'id');
+    }
+
+    public function layanan()
+    {
+        return $this->belongsTo(Service::class, 'layanan_id', 'id');
+    }
+
+    public function produk()
+    {
+        return $this->belongsTo(Product::class, 'produk_id', 'id');
+    }
 }

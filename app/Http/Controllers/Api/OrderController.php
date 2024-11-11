@@ -61,22 +61,22 @@ class OrderController extends Controller
 
     private function validateOrder($request){
         Validator::make($request->all(), [
-            'product.*.produk_id' => ['required', 'exists:tbl_produk,id'],
-            'product.*.layanan_id' => ['required', 'exists:tbl_layanan,id'],
-            'product.*.quantity' => ['required', 'integer'],
-            'alamat_customer_id' => ['required', 'exists:tbl_alamat,id'],
-            'cp_customer_id' => ['required', 'exists:tbl_cp_customer,id'],
+            'produk_id' => ['required', 'exists:tbl_produk,id'],
+            'layanan_id' => ['required', 'exists:tbl_layanan,id'],
+            'nama_cp' => ['required', 'string'],
+            'email_cp' => ['required', 'email'],
+            'no_telp_cp' => ['required', 'string'],
         ], [
-            'product.*.produk_id.required' => 'Product ID is required',
-            'product.*.produk_id.exists' => 'Product ID not found',
-            'product.*.layanan_id.required' => 'Service ID is required',
-            'product.*.layanan_id.exists' => 'Service ID not found',
-            'product.*.quantity.required' => 'Quantity is required',
-            'product.*.quantity.integer' => 'Quantity must be an integer',
-            'alamat_customer_id.required' => 'Customer Address ID is required',
-            'alamat_customer_id.exists' => 'Customer Address ID not found',
-            'cp_customer_id.required' => 'CP Customer ID is required',
-            'cp_customer_id.exists' => 'CP Customer ID not found',
+            'produk_id.required' => 'Product ID is required',
+            'produk_id.exists' => 'Product ID not found',
+            'layanan_id.required' => 'Service ID is required',
+            'layanan_id.exists' => 'Service ID not found',
+            'nama_cp.required' => 'Name is required',
+            'nama_cp.string' => 'Name must be a string',
+            'email_cp.required' => 'Email is required',
+            'email_cp.email' => 'Email must be a valid email address',
+            'no_telp_cp.required' => 'Phone number is required',
+            'no_telp_cp.string' => 'Phone number must be a string',
         ])->validate();
     }
 
@@ -99,5 +99,27 @@ class OrderController extends Controller
         }
     }
 
+    public function created($id){
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $order = Order::getOrder($id, $user->id);
+            if(!$order) {
+                return $this->generateResponse('error', 'Data not found', null, 404);
+            }
 
+            return $this->generateResponse('success', 'Data retrieved successfully', $order);
+        } catch (\Exception $e) {
+            return $this->generateResponse('error', $e->getMessage(), null, 500);
+        }
+    }
+
+    public function history(){
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $orders = Order::getListOrder($user->id);
+            return $this->generateResponse('success', 'Data retrieved successfully', $orders);
+        } catch (\Exception $e) {
+            return $this->generateResponse('error', $e->getMessage(), null, 500);
+        }
+    }
 }

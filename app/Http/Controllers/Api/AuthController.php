@@ -8,6 +8,7 @@ use App\Mail\SendOtpMail;
 use App\Models\Customer;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -152,29 +153,38 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        $validator = $this->validateForm($request);
-        if ($validator->fails()) {
-            return $this->generateResponse('error', $validator->errors()->first(), null, 422);
-        }
+        DB::beginTransaction();
+        try {
+            $validator = $this->validateForm($request);
+            if ($validator->fails()) {
+                return $this->generateResponse('error', $validator->errors()->first(), null, 422);
+            }
 
-        $customer = new Customer();
-        $customer->nama_perusahaan = $request->nama_perusahaan;
-        $customer->email_perusahaan = $request->email_perusahaan;
-        $customer->no_telp_perusahaan = $request->no_telp_perusahaan;
-        $customer->npwp_perusahaan = $request->npwp_perusahaan;
-        $customer->username = $request->username;
-        $customer->password = bcrypt($request->password);
-        $customer->alamat = $request->alamat;
-        $customer->provinsi_id = $request->provinsi_id;
-        $customer->kota_id = $request->kota_id;
-        $customer->kecamatan_id = $request->kecamatan_id;
-        $customer->kelurahan_id = $request->kelurahan_id;
-        $customer->otp_code = rand(100000, 999999);
+            $customer = new Customer();
+            $customer->nama_perusahaan = $request->nama_perusahaan;
+            $customer->email_perusahaan = $request->email_perusahaan;
+            $customer->no_telp_perusahaan = $request->no_telp_perusahaan;
+            $customer->npwp_perusahaan = $request->npwp_perusahaan;
+            $customer->username = $request->username;
+            $customer->password = bcrypt($request->password);
+            $customer->alamat = $request->alamat;
+            $customer->provinsi_id = $request->provinsi_id;
+            $customer->kota_id = $request->kota_id;
+            $customer->kecamatan_id = $request->kecamatan_id;
+            $customer->kelurahan_id = $request->kelurahan_id;
+            $customer->otp_code = rand(100000, 999999);
 
-        if ($customer->save()) {
-            Mail::to($customer->email_perusahaan)->send(new SendOtpMail($customer->otp_code));
-            return $this->generateResponse('success', 'Register success. Please check your email for OTP', $customer, 201);
-        } else {
+            if ($customer->save()) {
+                DB::commit();
+                Mail::to($customer->email_perusahaan)->send(new SendOtpMail($customer->otp_code));
+                return $this->generateResponse('success', 'Register success. Please check your email for OTP', $customer, 201);
+            } else {
+                DB::rollBack();
+                return $this->generateResponse('error', 'Register failed', null, 400);
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error($e->getMessage());
             return $this->generateResponse('error', 'Register failed', null, 400);
         }
     }

@@ -12,6 +12,6 @@
     <p>This OTP is valid for a limited time only. If you did not request this, please ignore this email.</p>
 
     <br>
-    <p>Thank you,<br>Your Company Team</p>
+    <p>Thank you,<br>XYZ Company</p>
 </body>
 </html>

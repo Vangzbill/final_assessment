@@ -16,6 +16,7 @@ class Order extends Model
         'id',
         'customer_id',
         'layanan_id',
+        'produk_id',
         'alamat_customer_id',
         'cp_customer_id',
         'quantity',
@@ -40,22 +41,47 @@ class Order extends Model
         return $this->belongsTo(Service::class, 'layanan_id', 'id');
     }
 
+    public function produk()
+    {
+        return $this->belongsTo(Product::class, 'produk_id', 'id');
+    }
+
     public function cp_customer()
     {
         return $this->belongsTo(CpCustomer::class, 'cp_customer_id', 'id');
+    }
+
+    public function order_status_history()
+    {
+        return $this->hasMany(OrderStatusHistory::class, 'order_id', 'id');
+    }
+
+    public function proforma_invoice_item()
+    {
+        return $this->hasMany(ProformaInvoiceItem::class, 'order_id', 'id');
     }
 
     public static function createOrder($userId, $request)
     {
         DB::beginTransaction();
         try {
+            $cp_customer = CpCustomer::create([
+                'customer_id' => $userId,
+                'nama' => $request['nama_cp'],
+                'email' => $request['email_cp'],
+                'no_telp' => $request['no_telp_cp'],
+            ]);
+
+            $harga_perangkat = Product::find($request['produk_id'])->harga_produk;
+            $harga_layanan = Service::find($request['layanan_id'])->harga_layanan;
             $order = Order::create([
                 'customer_id' => $userId,
-                'layanan_id' => $request['product'][0]['layanan_id'],
-                'alamat_customer_id' => $request['alamat_customer_id'],
-                'cp_customer_id' => $request['cp_customer_id'],
+                'layanan_id' => $request['layanan_id'],
+                'produk_id' => $request['produk_id'],
+                'alamat_customer_id' => 0,
+                'cp_customer_id' => $cp_customer->id,
                 'quantity' => 1,
-                'total_harga' => 0,
+                'total_harga' => ($harga_perangkat * 0.11) + $harga_layanan + $harga_perangkat,
                 'order_date' => Carbon::now(),
                 'unique_order' => 'ORD' . $userId . '-' . Carbon::now()->format('YmdHis'),
             ]);
@@ -68,37 +94,51 @@ class Order extends Model
                 'tanggal' => Carbon::now(),
             ]);
 
-            for ($i = 0; $i < 2; $i++) {
-                $lastInvoice = ProformaInvoice::where('order_id', $order->id)->orderBy('id', 'desc')->first();
-                $proforma_invoice = ProformaInvoice::create([
-                    'order_id' => $order->id,
-                    'no_proforma_invoice' => 'INV' . $order->id . '-' . ($lastInvoice ? $lastInvoice->id + 1 : 1),
-                    'tanggal_proforma' => Carbon::now(),
-                    'tanggal_jatuh_tempo' => Carbon::now()->addDays(10),
-                ]);
+            $lastInvoice = ProformaInvoice::where('order_id', $order->id)->orderBy('id', 'desc')->first();
 
-                if ($i == 0) {
-                    $proforma_invoice_id_perangkat = $proforma_invoice->id;
-                } else {
-                    $proforma_invoice_id_layanan = $proforma_invoice->id;
-                }
-            }
+            $proforma_invoice_perangkat = ProformaInvoice::create([
+                'order_id' => $order->id,
+                'no_proforma_invoice' => 'INV' . $order->id . '-' . ($lastInvoice ? $lastInvoice->id + 1 : 1),
+                'tanggal_proforma' => Carbon::now(),
+                'tanggal_jatuh_tempo' => Carbon::now()->addDays(10),
+                'biaya_perangkat' => $harga_perangkat,
+                'deposit_layanan' => 0,
+                'biaya_pengiriman' => 0,
+                'ppn' => $harga_perangkat * 0.11,
+                'total_bayar' => $harga_perangkat + ($harga_perangkat * 0.11),
+            ]);
 
-            foreach ($request['product'] as $product) {
-                ProformaInvoiceItem::create([
-                    'order_id' => $order->id,
-                    'proforma_invoice_id' => $proforma_invoice_id_perangkat,
-                    'produk_id' => $product['produk_id'],
-                    'quantity' => $product['quantity'],
-                ]);
+            $proforma_invoice_layanan = ProformaInvoice::create([
+                'order_id' => $order->id,
+                'no_proforma_invoice' => 'INV' . $order->id . '-' . ($lastInvoice ? $lastInvoice->id + 1 : 1),
+                'tanggal_proforma' => Carbon::now(),
+                'tanggal_jatuh_tempo' => Carbon::now()->addDays(10),
+                'biaya_perangkat' => 0,
+                'deposit_layanan' => $harga_layanan,
+                'biaya_pengiriman' => 0,
+                'ppn' => 0,
+                'total_bayar' => $harga_layanan,
+            ]);
 
-                ProformaInvoiceItem::create([
-                    'order_id' => $order->id,
-                    'proforma_invoice_id' => $proforma_invoice_id_layanan,
-                    'layanan_id' => $product['layanan_id'],
-                    'quantity' => $product['quantity'],
-                ]);
-            }
+            ProformaInvoiceItem::create([
+                'order_id' => $order->id,
+                'proforma_invoice_id' => $proforma_invoice_perangkat->id,
+                'produk_id' => $request['produk_id'],
+                'quantity' => 1,
+                'nilai_pokok' => $harga_perangkat,
+                'nilai_ppn' => $harga_perangkat * 0.11,
+                'total_bayar' => $harga_perangkat + ($harga_perangkat * 0.11),
+            ]);
+
+            ProformaInvoiceItem::create([
+                'order_id' => $order->id,
+                'proforma_invoice_id' => $proforma_invoice_layanan->id,
+                'layanan_id' => $request['layanan_id'],
+                'quantity' => 1,
+                'nilai_pokok' => $harga_layanan,
+                'nilai_ppn' => 0,
+                'total_bayar' => $harga_layanan,
+            ]);
 
             if (!$order) {
                 DB::rollBack();
@@ -113,4 +153,37 @@ class Order extends Model
         }
     }
 
+    public static function getListOrder($userId)
+    {
+        $order = Order::with(['layanan', 'produk', 'cp_customer', 'order_status_history', 'order_status_history.status', 'proforma_invoice_item', 'proforma_invoice_item.produk', 'proforma_invoice_item.layanan'])
+            ->where('customer_id', $userId)
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return $order;
+    }
+
+    public static function getOrder($orderId, $userId)
+    {
+        $order = Order::with(['layanan', 'cp_customer', 'order_status_history', 'order_status_history.status', 'proforma_invoice_item', 'proforma_invoice_item.produk', 'proforma_invoice_item.layanan'])
+            ->where('id', $orderId)
+            ->where('customer_id', $userId)
+            ->first();
+
+        if ($order) {
+            return [
+                'order_id' => $order->id,
+                'nama_perangkat' => optional($order->proforma_invoice_item->first()->produk)->nama_produk,
+                'nama_cp' => optional($order->cp_customer)->nama,
+                'email_cp' => optional($order->cp_customer)->email,
+                'no_telp_cp' => optional($order->cp_customer)->no_telp,
+                'harga_perangkat' => optional($order->proforma_invoice_item->first()->produk)->harga_produk,
+                'total_biaya' => $order->total_harga,
+                'ppn' => $order->proforma_invoice_item->sum('nilai_ppn'),
+                'deposit_layanan' => optional($order->layanan)->harga_layanan,
+            ];
+        }
+
+        return null;
+    }
 }

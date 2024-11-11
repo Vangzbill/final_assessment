@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
-use App\Models\Otp;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -21,27 +21,32 @@ class OtpController extends Controller
 
     public function verifyOtp(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email_perusahaan' => 'required|email|exists:customers,email_perusahaan',
-            'otp_code' => 'required|integer',
-        ]);
+        try{
+            $validator = Validator::make($request->all(), [
+                'email_perusahaan' => 'required|email|exists:tbl_customer,email_perusahaan',
+                'otp_code' => 'required|integer',
+            ]);
 
-        if ($validator->fails()) {
-            return $this->generateResponse('error', $validator->errors()->first(), null, 422);
+            if ($validator->fails()) {
+                return $this->generateResponse('error', $validator->errors()->first(), null, 422);
+            }
+
+            $customer = Customer::where('email_perusahaan', $request->email_perusahaan)
+                ->where('otp_code', $request->otp_code)
+                ->first();
+
+            if (!$customer) {
+                return $this->generateResponse('error', 'OTP is incorrect', null, 400);
+            }
+
+            $customer->email_verified_at = now();
+            $customer->otp_code = null;
+            $customer->save();
+
+            return $this->generateResponse('success', 'Email verified successfully', $customer, 200);
         }
-
-        $customer = Customer::where('email_perusahaan', $request->email_perusahaan)
-            ->where('otp_code', $request->otp_code)
-            ->first();
-
-        if (!$customer) {
-            return $this->generateResponse('error', 'OTP is incorrect', null, 400);
+        catch(Exception $e){
+            return $this->generateResponse('error', $e->getMessage(), null, 500);
         }
-
-        $customer->email_verified_at = now();
-        $customer->otp_code = null;
-        $customer->save();
-
-        return $this->generateResponse('success', 'Email verified successfully', $customer, 200);
     }
 }

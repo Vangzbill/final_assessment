@@ -31,6 +31,7 @@ Route::post('otp/verify', [OtpController::class, 'verifyOtp']);
 Route::middleware('jwt.verify')->prefix('order')->group(function () {
     Route::post('add-cp', [OrderController::class, 'addCp']);
     Route::post('create', [OrderController::class, 'create']);
+    Route::get('created/{id}', [OrderController::class, 'created']);
     Route::get('history', [OrderController::class, 'history']);
     Route::get('detail/{id}', [OrderController::class, 'detail']);
     Route::post('cancel/{id}', [OrderController::class, 'cancel']);
