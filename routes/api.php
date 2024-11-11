@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\OtpController;
 use App\Http\Controllers\Api\RegionController;
@@ -44,4 +45,8 @@ Route::prefix('wilayah')->group(function () {
     Route::get('kabupaten/{id}', [RegionController::class, 'kabupaten']);
     Route::get('kecamatan/{id}', [RegionController::class, 'kecamatan']);
     Route::get('kelurahan/{id}', [RegionController::class, 'kelurahan']);
+});
+
+Route::middleware('jwt.verify')->prefix('payment')->group(function () {
+    Route::post('midtrans/callback', [PaymentController::class, 'midtransCallback']);
 });
