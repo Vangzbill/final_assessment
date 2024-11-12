@@ -38,13 +38,19 @@ class Payment extends Model
                     ]
                 ],
                 'customer_details' => [
-                    'first_name' => $customer->nama,
+                    'first_name' => $customer->nama_perusahaan,
                     'last_name' => '',
-                    'email' => $customer->email,
-                    'phone' => $customer->telepon,
+                    'email' => $customer->email_perusahaan,
+                    'phone' => $customer->no_telp_perusahaan,
                 ]
             ];
 
+            Config::$curlOptions = [
+                CURLOPT_SSL_VERIFYPEER => false
+            ];
+            Config::$isProduction = false;
+            Config::$isSanitized = true;
+            Config::$is3ds = true;
             $snapToken = Snap::getSnapToken($data_order);
             Order::table('h_order')
                 ->where('id', $orderId)
@@ -54,7 +60,11 @@ class Payment extends Model
                 ]);
             return $snapToken;
         } catch (Exception $e) {
-            Log::error('Error occurred while retrieving Snap token: ' . $e->getMessage());
+            Log::error('Error occurred while retrieving Snap token: ' . $e->getMessage(), [
+                'order_id' => $orderId,
+                'server_key' => $serverKey,  // To check if it's null
+                'client_key' => $clientKey,  // To check if it's null
+            ]);
             return null;
         }
     }
