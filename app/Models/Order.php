@@ -27,6 +27,7 @@ class Order extends Model
         'unique_order',
         'snap_token',
         'payment_status',
+        'payment_url'
     ];
 
     public $timestamps = false;
@@ -86,13 +87,17 @@ class Order extends Model
                 'unique_order' => 'ORD' . $userId . '-' . Carbon::now()->format('YmdHis'),
             ]);
 
-            OrderStatusHistory::create([
+            $riwayat_order = OrderStatusHistory::create([
                 'user_id' => $userId,
                 'order_id' => $order->id,
                 'status_id' => 1,
                 'keterangan' => 'Order created',
                 'tanggal' => Carbon::now(),
             ]);
+
+            $order_data = Order::find($order->id);
+            $order_data->riwayat_status_order_id = $riwayat_order->id;
+            $order_data->save();
 
             $lastInvoice = ProformaInvoice::where('order_id', $order->id)->orderBy('id', 'desc')->first();
 
