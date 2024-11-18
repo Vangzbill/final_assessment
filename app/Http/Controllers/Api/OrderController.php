@@ -122,4 +122,32 @@ class OrderController extends Controller
             return $this->generateResponse('error', $e->getMessage(), null, 500);
         }
     }
+
+    public function detail($id){
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $order = Order::getOrderDetail($id, $user->id);
+            if(!$order) {
+                return $this->generateResponse('error', 'Data not found', null, 404);
+            }
+
+            return $this->generateResponse('success', 'Data retrieved successfully', $order);
+        } catch (\Exception $e) {
+            return $this->generateResponse('error', $e->getMessage(), null, 500);
+        }
+    }
+
+    public function summary($id){
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $order = Order::getOrderSummary($id, $user->id);
+            if(!$order) {
+                return $this->generateResponse('error', 'Data not found', null, 404);
+            }
+
+            return $this->generateResponse('success', 'Data retrieved successfully', $order);
+        } catch (\Exception $e) {
+            return $this->generateResponse('error', $e->getMessage(), null, 500);
+        }
+    }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Order;
+use App\Models\OrderStatusHistory;
 use Illuminate\Console\Command;
 
 class UpdateDelivery extends Command
@@ -25,6 +27,17 @@ class UpdateDelivery extends Command
      */
     public function handle()
     {
+        $orders = Order::where('payment_status', 2)->get();
+        foreach ($orders as $order) {
+            $orderHistory = new OrderStatusHistory();
+            $orderHistory->order_id = $order->id;
+            $orderHistory->status_id = 3;
+            $orderHistory->keterangan = 'Pesanan sedang dikirim';
+            $orderHistory->tanggal = now();
+            $orderHistory->save();
 
+            $order->riwayat_status_order_id = $orderHistory->id;
+            $order->save();
+        }
     }
 }

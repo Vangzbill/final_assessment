@@ -35,6 +35,7 @@ Route::middleware('jwt.verify')->prefix('order')->group(function () {
     Route::get('created/{id}', [OrderController::class, 'created']);
     Route::get('history', [OrderController::class, 'history']);
     Route::get('detail/{id}', [OrderController::class, 'detail']);
+    Route::get('summary/{id}', [OrderController::class, 'summary']);
     Route::post('cancel/{id}', [OrderController::class, 'cancel']);
     Route::post('payment/{id}', [OrderController::class, 'payment']);
     Route::post('snap/callback', [OrderController::class, 'snapCallback']);

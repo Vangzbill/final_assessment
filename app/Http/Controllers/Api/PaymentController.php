@@ -76,30 +76,39 @@ class PaymentController extends Controller
 
     public function finishPayment(Request $request)
     {
-        $user = JWTAuth::parseToken()->authenticate();
-        if (!$user) {
+        $token = $request->query('token');
+
+        if (!$token || !JWTAuth::setToken($token)->check()) {
             return $this->generateResponse('error', 'Unauthorized', null, 401);
         }
 
-        $order = Order::where('id', $request->order_id)
-                     ->where('user_id', $user->id)
-                     ->first();
+        $user = JWTAuth::authenticate($token);
 
-        $order_history = new OrderStatusHistory();
-        $order_history->order_id = $order->id;
-        $order_history->status_id = 2;
-        $order_history->keterangan = 'Pembayaran berhasil';
-        $order_history->tanggal = now();
-        $order_history->save();
+        $order = Order::where('id', $request->order_id)
+                     ->where('customer_id', $user->id)
+                     ->first();
 
         if (!$order) {
             return $this->generateResponse('error', 'Order not found', null, 404);
         }
 
+        $order_history = new OrderStatusHistory();
+    $order_history->order_id = $order->id;
+        $order_history->status_id = 2;
+        $order_history->keterangan = 'Pembayaran berhasil';
+        $order_history->tanggal = now();
+        $order_history->save();
+
+        $order->payment_status = 2;
+        $order->tanggal_pembayaran = now();
+        $order->riwayat_status_order_id = $order_history->id;
+        $order->save();
+
         return $this->generateResponse('success', 'Payment completed', [
             'order_id' => $order->id,
             'status' => $order->payment_status,
-            'payment_url' => $order->payment_url
+            'payment_url' => $order->payment_url,
         ], 200);
     }
+
 }

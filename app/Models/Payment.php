@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Midtrans\Snap;
 use Midtrans\Config;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class Payment extends Model
 {
@@ -45,8 +46,11 @@ class Payment extends Model
                     'phone' => $customer->no_telp_perusahaan,
                 ],
                 'callbacks' => [
-                    'finish' => route('payment.finish', ['order_id' => $orderId]),
-                    'notification' => route('payment.notification')
+                    'finish' => route('payment.finish', [
+                        'order_id' => $orderId,
+                        'token' => JWTAuth::fromUser($user)
+                    ]),
+                    'notification' => route('payment.notification'),
                 ]
             ];
 

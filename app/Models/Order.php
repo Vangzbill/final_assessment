@@ -191,4 +191,85 @@ class Order extends Model
 
         return null;
     }
+
+    public static function getOrderDetail($orderId, $userId)
+    {
+        $order = Order::with([
+            'layanan',
+            'produk',
+            'cp_customer',
+            'order_status_history',
+            'order_status_history.status',
+            'proforma_invoice_item',
+            'proforma_invoice_item.produk',
+            'proforma_invoice_item.layanan'
+        ])->where('id', $orderId)
+            ->where('customer_id', $userId)
+            ->first();
+
+        $formatTanggal = function ($tanggal) {
+            return Carbon::parse($tanggal)->translatedFormat('d F Y');
+        };
+
+        $riwayatStatus = $order->order_status_history
+            ->filter(function ($item) {
+                return $item->status->nama_status_order !== 'Order Confirmed';
+            })
+            ->map(function ($item) use ($formatTanggal) {
+                return [
+                    'status' => $item->status->nama_status_order,
+                    'keterangan' => $item->keterangan,
+                    'tanggal' => $formatTanggal($item->tanggal),
+                ];
+            })
+            ->values();
+
+        $data = [
+            'unique_order' => $order->unique_order,
+            'nama_perangkat' => optional($order->proforma_invoice_item->first()->produk)->nama_produk,
+            'order_date' => $formatTanggal($order->order_date),
+            'riwayat_status_order' => $riwayatStatus,
+        ];
+
+        return $data;
+    }
+
+    public static function getOrderSummary($orderId, $userId)
+    {
+        $order = Order::with([
+            'layanan',
+            'produk',
+            'cp_customer',
+            'order_status_history',
+            'order_status_history.status',
+            'proforma_invoice_item',
+            'proforma_invoice_item.produk',
+            'proforma_invoice_item.layanan'
+        ])->where('id', $orderId)
+            ->where('customer_id', $userId)
+            ->first();
+
+        $formatTanggal = function ($tanggal) {
+            return Carbon::parse($tanggal)->translatedFormat('d F Y');
+        };
+
+        $data = [
+            'unique_order' => $order->unique_order,
+            'nama_perangkat' => optional($order->proforma_invoice_item->first()->produk)->nama_produk,
+            'order_date' => $formatTanggal($order->order_date),
+            'penerima' => [
+                'nama' => optional($order->cp_customer)->nama,
+                'email' => optional($order->cp_customer)->email,
+                'no_telp' => optional($order->cp_customer)->no_telp,
+            ],
+            'rincian' => [
+                'harga_perangkat' => optional($order->proforma_invoice_item->first()->produk)->harga_produk,
+                'ppn' => $order->proforma_invoice_item->sum('nilai_ppn'),
+                'deposit_layanan' => optional($order->layanan)->harga_layanan,
+                'total_biaya' => $order->total_harga,
+            ]
+        ];
+
+        return $data;
+    }
 }
