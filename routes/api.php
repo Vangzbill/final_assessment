@@ -47,6 +47,8 @@ Route::prefix('wilayah')->group(function () {
     Route::get('kelurahan/{id}', [RegionController::class, 'kelurahan']);
 });
 
-Route::middleware('jwt.verify')->prefix('payment')->group(function () {
-    Route::post('midtrans/callback', [PaymentController::class, 'midtransCallback']);
+Route::prefix('payment')->group(function () {
+    Route::middleware('jwt.verify')->post('midtrans/create', [PaymentController::class, 'createPayment']);
+    Route::post('midtrans/notification', [PaymentController::class, 'handleNotification'])->name('payment.notification');
+    Route::middleware('jwt.verify')->get('finish', [PaymentController::class, 'finishPayment'])->name('payment.finish');
 });

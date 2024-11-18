@@ -22,4 +22,9 @@ class OrderStatusHistory extends Model
     {
         return $this->belongsTo(StatusOrder::class, 'status_id', 'id');
     }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class, 'order_id', 'id');
+    }
 }

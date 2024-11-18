@@ -43,6 +43,10 @@ class Payment extends Model
                     'last_name' => '-',
                     'email' => $customer->email_perusahaan,
                     'phone' => $customer->no_telp_perusahaan,
+                ],
+                'callbacks' => [
+                    'finish' => route('payment.finish', ['order_id' => $orderId]),
+                    'notification' => route('payment.notification')
                 ]
             ];
 
