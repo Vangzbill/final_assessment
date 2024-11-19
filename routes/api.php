@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProductController;
@@ -52,4 +53,10 @@ Route::prefix('payment')->group(function () {
     Route::middleware('jwt.verify')->post('midtrans/create', [PaymentController::class, 'createPayment']);
     Route::post('midtrans/notification', [PaymentController::class, 'handleNotification'])->name('payment.notification');
     Route::middleware('jwt.verify')->get('finish', [PaymentController::class, 'finishPayment'])->name('payment.finish');
+});
+
+Route::middleware('jwt.verify')->prefix('document')->group(function () {
+    Route::get('invoice/{id}', [DocumentController::class, 'invoice']);
+    Route::get('acceptance-letter/{id}', [DocumentController::class, 'acceptanceLetter']);
+    Route::get('activation-letter/{id}', [DocumentController::class, 'activationLetter']);
 });
