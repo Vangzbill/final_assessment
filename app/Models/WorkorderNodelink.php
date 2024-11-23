@@ -14,4 +14,6 @@ class WorkorderNodelink extends Model
         'kontrak_nodelink_id',
         'created_date',
     ];
+
+    public $timestamps = false;
 }

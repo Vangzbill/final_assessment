@@ -17,4 +17,6 @@ class Nodelink extends Model
         'workorder_nodelink_id',
         'status_nodelink',
     ];
+
+    public $timestamps = false;
 }

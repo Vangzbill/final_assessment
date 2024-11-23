@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Invoice;
 use App\Models\Kontrak;
 use App\Models\KontrakLayanan;
 use App\Models\KontrakNodelink;
@@ -168,6 +169,12 @@ class PaymentController extends Controller
 
         $kontrak_nodelink->nodelink_id = $nodelink->id;
         $kontrak_nodelink->save();
+
+        $invoice = new Invoice();
+        $invoice->kontrak_id = $kontrak->id;
+        $invoice->tanggal_invoice = now();
+        $invoice->tanggal_jatuh_tempo = now()->addDays(10);
+        $invoice->save();
 
         return $this->generateResponse('success', 'Payment completed', [
             'order_id' => $order->id,

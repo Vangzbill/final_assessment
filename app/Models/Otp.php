@@ -75,5 +75,5 @@ class Otp extends Model
             ->where('is_verified', true);
     }
 
-    
+
 }
