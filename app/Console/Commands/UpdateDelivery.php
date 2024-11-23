@@ -20,7 +20,7 @@ class UpdateDelivery extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Mark order as delivery in progress';
 
     /**
      * Execute the console command.
