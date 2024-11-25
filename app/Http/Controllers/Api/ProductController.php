@@ -23,6 +23,11 @@ class ProductController extends Controller
     {
         try {
             $product = ProductCategory::select('id', 'nama_kategori as nama', 'deskripsi')->get();
+
+            $product->map(function ($item) {
+                $item->image = '';
+            });
+
             return $this->generateResponse('success', 'Data retrieved successfully', $product);
         } catch (\Exception $e) {
             return $this->generateResponse('error', $e->getMessage(), null, 500);
@@ -54,5 +59,5 @@ class ProductController extends Controller
         }
     }
 
-    
+
 }
