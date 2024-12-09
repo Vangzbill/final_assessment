@@ -175,8 +175,9 @@ class AuthController extends Controller
             $customer->otp_code = rand(100000, 999999);
 
             if ($customer->save()) {
-                DB::commit();
+                set_time_limit(3600);
                 Mail::to($customer->email_perusahaan)->send(new SendOtpMail($customer->otp_code));
+                DB::commit();
                 return $this->generateResponse('success', 'Register success. Please check your email for OTP', $customer, 201);
             } else {
                 DB::rollBack();

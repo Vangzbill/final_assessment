@@ -29,7 +29,7 @@ class DocumentController extends Controller
             }
 
             $pdf = Pdf::loadView('document.invoice', ['order' => $order]);
-            return $pdf->download('invoice-'.$order['unique_order'].'.pdf');
+            return $pdf->download('invoice-'.$order['order_id'].'.pdf');
         }catch(\Exception $e){
             return $this->generateResponse('error', $e->getMessage(), null, 500);
         }

@@ -177,8 +177,10 @@ class Order extends Model
 
         if ($order) {
             return [
-                'order_id' => $order->id,
+                'id' => $order->id,
+                'order_id' => $order->unique_order,
                 'nama_perangkat' => optional($order->proforma_invoice_item->first()->produk)->nama_produk,
+                'nama_layanan' => optional($order->proforma_invoice_item()->whereNotNull('layanan_id')->first()->layanan)->nama_layanan,
                 'nama_cp' => optional($order->cp_customer)->nama,
                 'email_cp' => optional($order->cp_customer)->email,
                 'no_telp_cp' => optional($order->cp_customer)->no_telp,

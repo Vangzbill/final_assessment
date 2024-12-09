@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\FaqProduct;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\Service;
@@ -59,5 +60,13 @@ class ProductController extends Controller
         }
     }
 
+    public function faqProduct($id){
+        try {
+            $data_faq = FaqProduct::where('kategori_produk_id', $id)->get();
 
+            return $this->generateResponse('success', 'Data retrieved successfully', $data_faq, 200);
+        } catch (\Exception $e) {
+            return $this->generateResponse('error', $e->getMessage(), null, 500);
+        }
+    }
 }

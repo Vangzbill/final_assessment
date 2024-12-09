@@ -27,6 +27,10 @@ Route::prefix('product')->group(function () {
     Route::get('/{id}', [ProductController::class, 'show']);
 });
 
+Route::prefix('faq')->group(function (){
+    Route::get('{id}', [ProductController::class, 'faqProduct']);
+});
+
 Route::post('otp/send', [OtpController::class, 'send']);
 Route::post('otp/verify', [OtpController::class, 'verifyOtp']);
 
