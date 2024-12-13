@@ -47,7 +47,9 @@ class ProductController extends Controller
 
                 $data = [
                     'id' => $product->id,
+                    'nama' => $product->nama_kategori,
                     'spesifikasi' => $product->spesifikasi,
+                    'image' => '',
                     'perangkat' => $perangkat,
                     'layanan' => $service
                 ];

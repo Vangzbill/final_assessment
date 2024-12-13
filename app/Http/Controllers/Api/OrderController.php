@@ -62,15 +62,15 @@ class OrderController extends Controller
     private function validateOrder($request){
         Validator::make($request->all(), [
             'produk_id' => ['required', 'exists:tbl_produk,id'],
-            'layanan_id' => ['required', 'exists:tbl_layanan,id'],
+            'nama_layanan' => ['required', 'exists:tbl_layanan,nama_layanan'],
             'nama_cp' => ['required', 'string'],
             'email_cp' => ['required', 'email'],
             'no_telp_cp' => ['required', 'string'],
         ], [
             'produk_id.required' => 'Product ID is required',
             'produk_id.exists' => 'Product ID not found',
-            'layanan_id.required' => 'Service ID is required',
-            'layanan_id.exists' => 'Service ID not found',
+            'nama_layanan.required' => 'Service name is required',
+            'nama_layanan.exists' => 'Service name not found',
             'nama_cp.required' => 'Name is required',
             'nama_cp.string' => 'Name must be a string',
             'email_cp.required' => 'Email is required',

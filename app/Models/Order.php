@@ -73,11 +73,14 @@ class Order extends Model
                 'no_telp' => $request['no_telp_cp'],
             ]);
 
+            $layanan = Service::where('nama_layanan', $request['nama_layanan'])->where('produk_id', $request['produk_id'])->first();
+
             $harga_perangkat = Product::find($request['produk_id'])->harga_produk;
-            $harga_layanan = Service::find($request['layanan_id'])->harga_layanan;
+            $harga_layanan = $layanan->harga_layanan;
+            $layanan_id = $layanan->id;
             $order = Order::create([
                 'customer_id' => $userId,
-                'layanan_id' => $request['layanan_id'],
+                'layanan_id' => $layanan_id,
                 'produk_id' => $request['produk_id'],
                 'alamat_customer_id' => 0,
                 'cp_customer_id' => $cp_customer->id,
@@ -138,7 +141,7 @@ class Order extends Model
             ProformaInvoiceItem::create([
                 'order_id' => $order->id,
                 'proforma_invoice_id' => $proforma_invoice_layanan->id,
-                'layanan_id' => $request['layanan_id'],
+                'layanan_id' => $layanan->id,
                 'quantity' => 1,
                 'nilai_pokok' => $harga_layanan,
                 'nilai_ppn' => 0,
