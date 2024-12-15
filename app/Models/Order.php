@@ -65,7 +65,7 @@ class Order extends Model
     public static function createOrder($userId, $request)
     {
         DB::beginTransaction();
-        try {
+        try{
             $cp_customer = CpCustomer::create([
                 'customer_id' => $userId,
                 'nama' => $request['nama_cp'],

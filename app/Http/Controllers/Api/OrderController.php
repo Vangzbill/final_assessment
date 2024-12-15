@@ -86,6 +86,10 @@ class OrderController extends Controller
             $user = JWTAuth::parseToken()->authenticate();
             $request->merge(['customer_id' => $user->id]);
             $user_id = $user->id;
+            $email_cp = CpCustomer::where('email', $request->email_cp)->first();
+            if($email_cp){
+                return $this->generateResponse('error', 'Email already exists', null, 400);
+            }
             $this->validateOrder($request);
             $data = $request->all();
             $order = Order::createOrder($user_id ,$data);
