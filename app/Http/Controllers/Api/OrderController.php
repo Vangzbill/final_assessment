@@ -97,7 +97,7 @@ class OrderController extends Controller
                 return $this->generateResponse('error', 'Failed to add data', null, 500);
             }
 
-            return $this->generateResponse('success', 'Data added successfully', $order, 201);
+            return $this->generateResponse('success', 'Data added successfully', $order, 200);
         } catch (\Exception $e) {
             return $this->generateResponse('error', $e->getMessage(), null, 500);
         }
