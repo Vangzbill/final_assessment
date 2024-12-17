@@ -97,7 +97,11 @@ class OrderController extends Controller
                 return $this->generateResponse('error', 'Failed to add data', null, 500);
             }
 
-            return $this->generateResponse('success', 'Data added successfully', $order, 200);
+            $responseOrder = Order::getOrder($order->id, $user_id);
+            if(!$responseOrder) {
+                return $this->generateResponse('error', 'Data not found', null, 404);
+            }
+            return $this->generateResponse('success', 'Data added successfully', $responseOrder, 200);
         } catch (\Exception $e) {
             return $this->generateResponse('error', $e->getMessage(), null, 500);
         }

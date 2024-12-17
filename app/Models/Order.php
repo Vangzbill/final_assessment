@@ -65,7 +65,7 @@ class Order extends Model
     public static function createOrder($userId, $request)
     {
         DB::beginTransaction();
-        try{
+        try {
             $cp_customer = CpCustomer::create([
                 'customer_id' => $userId,
                 'nama' => $request['nama_cp'],
@@ -85,7 +85,7 @@ class Order extends Model
                 'alamat_customer_id' => 0,
                 'cp_customer_id' => $cp_customer->id,
                 'quantity' => 1,
-                'total_harga' => ($harga_perangkat * 0.11) + $harga_layanan + $harga_perangkat,
+                'total_harga' => ($harga_perangkat * 0.11) + $harga_layanan + $harga_perangkat + 16000,
                 'order_date' => Carbon::now(),
                 'unique_order' => 'ORD' . $userId . '-' . Carbon::now()->format('YmdHis'),
             ]);
@@ -178,6 +178,12 @@ class Order extends Model
             ->where('customer_id', $userId)
             ->first();
 
+        if ((float) $order->total_harga < 16000) {
+            $total_keseluruhan = $order->total_harga + 16000;
+        } else {
+            $total_keseluruhan = $order->total_harga;
+        }
+
         if ($order) {
             return [
                 'id' => $order->id,
@@ -187,10 +193,12 @@ class Order extends Model
                 'nama_cp' => optional($order->cp_customer)->nama,
                 'email_cp' => optional($order->cp_customer)->email,
                 'no_telp_cp' => optional($order->cp_customer)->no_telp,
+                'biaya_asuransi' => 16000,
                 'harga_perangkat' => optional($order->proforma_invoice_item->first()->produk)->harga_produk,
-                'total_biaya' => $order->total_harga,
+                'total_biaya' => optional($order->proforma_invoice_item->first()->produk)->harga_produk + 16000,
                 'ppn' => $order->proforma_invoice_item->sum('nilai_ppn'),
                 'deposit_layanan' => optional($order->layanan)->harga_layanan,
+                'total_keseluruhan' => $total_keseluruhan,
             ];
         }
 
