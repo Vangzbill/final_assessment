@@ -49,7 +49,7 @@ class OrderController extends Controller
 
             $this->validateCp($request);
             $cp = CpCustomer::create($request->all());
-            if(!$cp) {
+            if (!$cp) {
                 return $this->generateResponse('error', 'Failed to add data', null, 500);
             }
 
@@ -59,7 +59,8 @@ class OrderController extends Controller
         }
     }
 
-    private function validateOrder($request){
+    private function validateOrder($request)
+    {
         Validator::make($request->all(), [
             'produk_id' => ['required', 'exists:tbl_produk,id'],
             'nama_layanan' => ['required', 'exists:tbl_layanan,nama_layanan'],
@@ -87,18 +88,18 @@ class OrderController extends Controller
             $request->merge(['customer_id' => $user->id]);
             $user_id = $user->id;
             $email_cp = CpCustomer::where('email', $request->email_cp)->first();
-            if($email_cp){
+            if ($email_cp) {
                 return $this->generateResponse('error', 'Email already exists', null, 400);
             }
             $this->validateOrder($request);
             $data = $request->all();
-            $order = Order::createOrder($user_id ,$data);
-            if(!$order) {
+            $order = Order::createOrder($user_id, $data);
+            if (!$order) {
                 return $this->generateResponse('error', 'Failed to add data', null, 500);
             }
 
             $responseOrder = Order::getOrder($order->id, $user_id);
-            if(!$responseOrder) {
+            if (!$responseOrder) {
                 return $this->generateResponse('error', 'Data not found', null, 404);
             }
             return $this->generateResponse('success', 'Data added successfully', $responseOrder, 200);
@@ -107,11 +108,12 @@ class OrderController extends Controller
         }
     }
 
-    public function created($id){
+    public function created($id)
+    {
         try {
             $user = JWTAuth::parseToken()->authenticate();
             $order = Order::getOrder($id, $user->id);
-            if(!$order) {
+            if (!$order) {
                 return $this->generateResponse('error', 'Data not found', null, 404);
             }
 
@@ -120,22 +122,50 @@ class OrderController extends Controller
             return $this->generateResponse('error', $e->getMessage(), null, 500);
         }
     }
-
-    public function history(){
+    public function history(Request $request)
+    {
         try {
+            if (!$token = JWTAuth::getToken()) {
+                return $this->generateResponse('error', 'Token not provided', null, 401);
+            }
+
             $user = JWTAuth::parseToken()->authenticate();
-            $orders = Order::getListOrder($user->id);
-            return $this->generateResponse('success', 'Data retrieved successfully', $orders);
+
+            $statusIds = $request->query('status_id');
+            $page = $request->query('page', 1);
+
+            if ($statusIds) {
+                $statusIds = explode(',', $statusIds);
+            }
+
+            $orders = Order::getListOrder($user->id, $statusIds, $page);
+
+            $pagination = [
+                'current_page' => $orders->currentPage(),
+                'total_pages' => $orders->lastPage(),
+                'total_items' => $orders->total(),
+                'per_page' => $orders->perPage(),
+            ];
+
+            return $this->generateResponse('success', 'Data retrieved successfully', [
+                'orders' => $orders,
+                'pagination' => $pagination,
+            ]);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+            return $this->generateResponse('error', 'Token has expired', null, 401);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+            return $this->generateResponse('error', 'Token is invalid', null, 401);
         } catch (\Exception $e) {
             return $this->generateResponse('error', $e->getMessage(), null, 500);
         }
     }
 
-    public function detail($id){
+    public function detail($id)
+    {
         try {
             $user = JWTAuth::parseToken()->authenticate();
             $order = Order::getOrderDetail($id, $user->id);
-            if(!$order) {
+            if (!$order) {
                 return $this->generateResponse('error', 'Data not found', null, 404);
             }
 
@@ -145,11 +175,12 @@ class OrderController extends Controller
         }
     }
 
-    public function summary($id){
+    public function summary($id)
+    {
         try {
             $user = JWTAuth::parseToken()->authenticate();
             $order = Order::getOrderSummary($id, $user->id);
-            if(!$order) {
+            if (!$order) {
                 return $this->generateResponse('error', 'Data not found', null, 404);
             }
 

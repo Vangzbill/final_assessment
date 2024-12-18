@@ -161,14 +161,70 @@ class Order extends Model
         }
     }
 
-    public static function getListOrder($userId)
+    public static function getListOrder($userId, $statusIds = null, $page = 1)
     {
-        $order = Order::with(['layanan', 'produk', 'cp_customer', 'order_status_history', 'order_status_history.status', 'proforma_invoice_item', 'proforma_invoice_item.produk', 'proforma_invoice_item.layanan'])
-            ->where('customer_id', $userId)
-            ->orderBy('id', 'desc')
-            ->get();
+        $query = Order::with([
+            'layanan',
+            'produk',
+            'cp_customer',
+            'order_status_history',
+            'order_status_history.status',
+            'proforma_invoice_item',
+            'proforma_invoice_item.produk',
+            'produk.category',
+            'proforma_invoice_item.layanan'
+        ])
+            ->where('customer_id', $userId);
 
-        return $order;
+        if ($statusIds) {
+            $query->whereHas('order_status_history', function ($query) use ($statusIds) {
+                $query->whereIn('status_id', $statusIds)
+                    ->where(function ($subQuery) {
+                        $subQuery->whereRaw('id = (SELECT MAX(id) FROM tbl_riwayat_status_order AS osh WHERE osh.order_id = tbl_order.id)');
+                    });
+            });
+        }
+
+        $orders = $query->orderBy('tbl_order.id', 'desc')->paginate(10, ['*'], 'page', $page);
+
+        $orders->getCollection()->transform(function ($item) {
+            $lastStatusHistory = optional($item->order_status_history->last());
+            $statusOrder = optional($lastStatusHistory->status)->nama_status_order;
+            $statusId = optional($lastStatusHistory)->status_id;
+            if ($item->proforma_invoice_item->isEmpty()) {
+                $imageFileName = null;
+                $kategori = null;
+            } else {
+                $firstProforma = $item->proforma_invoice_item->first();
+                if ($firstProforma && $firstProforma->produk) {
+                    $imageFileName = $firstProforma->produk->gambar_produk;
+                    $kategori = optional($firstProforma->produk->category)->nama_kategori;
+                } else {
+                    $imageFileName = null;
+                    $kategori = null;
+                }
+            }
+            $image = $imageFileName ? asset('assets/images/' . $imageFileName) : null;
+
+            $kategori = optional(optional($item->produk)->category)->nama_kategori;
+
+            $tanggalOrder = Carbon::parse($item->order_date)->locale('id')->translatedFormat('d F Y');
+
+            $totalHarga = $item->total_harga < 16000 ? 16000 + $item->total_harga : $item->total_harga;
+
+            return [
+                'id' => $item->id,
+                'order_id' => $item->unique_order,
+                'status' => $statusOrder,
+                'status_id' => $statusId,
+                'image' => $image,
+                'kategori' => $kategori,
+                'tanggal_order' => $tanggalOrder,
+                'total_keseluruhan' => $totalHarga,
+            ];
+        });
+
+        return $orders;
     }
 
     public static function getOrder($orderId, $userId)
