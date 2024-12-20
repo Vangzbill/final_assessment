@@ -197,7 +197,7 @@ class Order extends Model
             } else {
                 $firstProforma = $item->proforma_invoice_item->first();
                 if ($firstProforma && $firstProforma->produk) {
-                    $imageFileName = $firstProforma->produk->gambar_produk;
+                    $imageFileName = $firstProforma->produk->gambar_order;
                     $kategori = optional($firstProforma->produk->category)->nama_kategori;
                 } else {
                     $imageFileName = null;
@@ -340,5 +340,15 @@ class Order extends Model
         ];
 
         return $data;
+    }
+
+    public static function cekOrder($id, $userId)
+    {
+        $order = Order::where('id', $id)
+            ->where('customer_id', $userId)
+            ->with('order_status_history', 'order_status_history.status')
+            ->first();
+
+        return $order->order_status_history->last()->status_id;
     }
 }

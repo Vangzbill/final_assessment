@@ -189,4 +189,30 @@ class OrderController extends Controller
             return $this->generateResponse('error', $e->getMessage(), null, 500);
         }
     }
+
+    public function cekPayment($id){
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $order = Order::cekOrder($id, $user->id);
+            if (!$order) {
+                return $this->generateResponse('error', 'Data not found', null, 404);
+            }
+
+            if ($order == 1) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Order has not been paid',
+                    'paid' => 0,
+                ], 200);
+            } elseif ($order == 2) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Order has been paid',
+                    'paid' => 1,
+                ], 200);
+            }
+        } catch (\Exception $e) {
+            return $this->generateResponse('error', $e->getMessage(), null, 500);
+        }
+    }
 }

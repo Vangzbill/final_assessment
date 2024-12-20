@@ -1,7 +1,12 @@
 <?php
 
+use App\Http\Controllers\Web\PaymentController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::middleware('add.ngrok.header')->group(function () {
+    Route::get('/', function () {
+        return view('welcome');
+    })->name('home');
+
+    Route::get('payment-success', [PaymentController::class, 'success'])->name('payment.success');
 });

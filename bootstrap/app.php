@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AddNgrokHeader;
 use App\Http\Middleware\VerifyJwtToken;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -15,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'jwt.verify' => VerifyJwtToken::class,
+            'add.ngrok.header' => AddNgrokHeader::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
