@@ -16,6 +16,8 @@ class Nodelink extends Model
         'created_date',
         'workorder_nodelink_id',
         'status_nodelink',
+        'latitude',
+        'longitude',
     ];
 
     public $timestamps = false;

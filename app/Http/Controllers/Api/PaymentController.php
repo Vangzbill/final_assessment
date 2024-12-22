@@ -176,11 +176,7 @@ class PaymentController extends Controller
         $invoice->tanggal_jatuh_tempo = now()->addDays(10);
         $invoice->save();
 
-        return $this->generateResponse('success', 'Payment completed', [
-            'order_id' => $order->id,
-            'status' => $order->payment_status,
-            'payment_url' => $order->payment_url,
-        ], 200);
+        return redirect()->away('https://Vangzbill.github.io/test-payment');
     }
 
 }
