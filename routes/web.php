@@ -9,4 +9,7 @@ Route::middleware('add.ngrok.header')->group(function () {
     })->name('home');
 
     Route::get('payment-success', [PaymentController::class, 'success'])->name('payment.success');
+    Route::get('/home', function () {
+        return view('pages.landing');
+    })->name('dashboard');
 });
