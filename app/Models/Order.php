@@ -110,23 +110,23 @@ class Order extends Model
                 'tanggal_proforma' => Carbon::now(),
                 'tanggal_jatuh_tempo' => Carbon::now()->addDays(10),
                 'biaya_perangkat' => $harga_perangkat,
-                'deposit_layanan' => 0,
-                'biaya_pengiriman' => 0,
-                'ppn' => $harga_perangkat * 0.11,
-                'total_bayar' => $harga_perangkat + ($harga_perangkat * 0.11),
-            ]);
-
-            $proforma_invoice_layanan = ProformaInvoice::create([
-                'order_id' => $order->id,
-                'no_proforma_invoice' => 'INV' . $order->id . '-' . ($lastInvoice ? $lastInvoice->id + 1 : 1),
-                'tanggal_proforma' => Carbon::now(),
-                'tanggal_jatuh_tempo' => Carbon::now()->addDays(10),
-                'biaya_perangkat' => 0,
                 'deposit_layanan' => $harga_layanan,
                 'biaya_pengiriman' => 0,
-                'ppn' => 0,
-                'total_bayar' => $harga_layanan,
+                'ppn' => $harga_perangkat * 0.11,
+                'total_keseluruhan' => $harga_perangkat + ($harga_perangkat * 0.11) + $harga_layanan + 16000,
             ]);
+
+            // $proforma_invoice_layanan = ProformaInvoice::create([
+            //     'order_id' => $order->id,
+            //     'no_proforma_invoice' => 'INV' . $order->id . '-' . ($lastInvoice ? $lastInvoice->id + 1 : 1),
+            //     'tanggal_proforma' => Carbon::now(),
+            //     'tanggal_jatuh_tempo' => Carbon::now()->addDays(10),
+            //     'biaya_perangkat' => 0,
+            //     'deposit_layanan' => $harga_layanan,
+            //     'biaya_pengiriman' => 0,
+            //     'ppn' => 0,
+            //     'total_keseluruhan' => $harga_layanan,
+            // ]);
 
             ProformaInvoiceItem::create([
                 'order_id' => $order->id,
@@ -135,12 +135,12 @@ class Order extends Model
                 'quantity' => 1,
                 'nilai_pokok' => $harga_perangkat,
                 'nilai_ppn' => $harga_perangkat * 0.11,
-                'total_bayar' => $harga_perangkat + ($harga_perangkat * 0.11),
+                'total_bayar' => $harga_perangkat + ($harga_perangkat * 0.11) ,
             ]);
 
             ProformaInvoiceItem::create([
                 'order_id' => $order->id,
-                'proforma_invoice_id' => $proforma_invoice_layanan->id,
+                'proforma_invoice_id' => $proforma_invoice_perangkat->id,
                 'layanan_id' => $layanan->id,
                 'quantity' => 1,
                 'nilai_pokok' => $harga_layanan,
