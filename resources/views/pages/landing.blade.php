@@ -1,5 +1,26 @@
 @extends('layout.blank')
 @section('content')
+    <style>
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 25vh;
+            background: 
+                linear-gradient(
+                    180deg,
+                    rgba(0, 123, 255, 0.8) 0%,
+                    rgba(0, 123, 255, 0.4) 50%,
+                    rgba(0, 0, 0, 1) 100%
+                ),
+                url('{{ asset("assets/images/background2.png") }}');
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+        }
+    </style>
     <div class="container mt-5">
         <div class="row pt-5 pe-3 ps-3 mb-5">
             <div class="col-md-12 d-flex justify-content-center align-items-center flex-column">
@@ -43,7 +64,7 @@
                 </h1>
                 <div class="row mt-3">
                     <div class="col-md-6">
-                        <div class="card" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
+                        <div class="card" style="background: rgba(0, 0, 0, 0.1); backdrop-filter: blur(10px);">
                             <div class="card-body p-0" style="position: relative;">
                                 <img src="{{ asset('assets/images/produk.png') }}" class="w-100" style="height: 400px; object-fit: cover;">
                                 <div style="position: absolute; bottom: 20px; left: 20px; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
@@ -54,7 +75,7 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="card" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
+                        <div class="card" style="background: rgba(0, 0, 0, 0.1); backdrop-filter: blur(10px);">
                             <div class="card-body p-0" style="position: relative;">
                                 <img src="{{ asset('assets/images/produk2.png') }}" class="w-100" style="height: 400px; object-fit: cover;">
                                 <div style="position: absolute; bottom: 20px; left: 20px; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">

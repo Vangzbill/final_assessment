@@ -13,16 +13,27 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10">
     <style>
         body {
-            background-color: #000000;
             font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+        }
+
+        #app {
+            position: relative;
+            z-index: 1;
+            margin: 0;
+            padding: 3rem;
         }
     </style>
 </head>
 
-<body id="app" class="m-0 p-5">
-    <section>
-        @yield('content')
-    </section>
+<body>
+    <div id="app">
+        <section>
+            @yield('content')
+        </section>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
