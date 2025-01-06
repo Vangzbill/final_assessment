@@ -27,7 +27,8 @@ class Order extends Model
         'unique_order',
         'snap_token',
         'payment_status',
-        'payment_url'
+        'payment_url',
+        'sn_kit',
     ];
 
     public $timestamps = false;
@@ -62,6 +63,11 @@ class Order extends Model
         return $this->hasMany(ProformaInvoiceItem::class, 'order_id', 'id');
     }
 
+    public function kontrak()
+    {
+        return $this->hasOne(Kontrak::class, 'order_id', 'id');
+    }
+
     public static function createOrder($userId, $request)
     {
         DB::beginTransaction();
@@ -88,6 +94,7 @@ class Order extends Model
                 'total_harga' => ($harga_perangkat * 0.11) + $harga_layanan + $harga_perangkat + 16000,
                 'order_date' => Carbon::now(),
                 'unique_order' => 'ORD' . $userId . '-' . Carbon::now()->format('YmdHis'),
+                'sn_kit' => 'KITSN' . $userId . '-' . (Order::max('id') + 1) . '-' . Carbon::now()->format('YmdHis'),
             ]);
 
             $riwayat_order = OrderStatusHistory::create([
@@ -135,7 +142,7 @@ class Order extends Model
                 'quantity' => 1,
                 'nilai_pokok' => $harga_perangkat,
                 'nilai_ppn' => $harga_perangkat * 0.11,
-                'total_bayar' => $harga_perangkat + ($harga_perangkat * 0.11) ,
+                'total_bayar' => $harga_perangkat + ($harga_perangkat * 0.11),
             ]);
 
             ProformaInvoiceItem::create([
@@ -259,6 +266,44 @@ class Order extends Model
         }
 
         return null;
+    }
+
+    public static function getActivation($orderId, $userId)
+    {
+        $order = Order::with([
+            'layanan',
+            'produk',
+            'customer',
+            'cp_customer',
+            'kontrak',
+            'proforma_invoice_item',
+            'proforma_invoice_item.produk',
+            'proforma_invoice_item.layanan'
+        ])->where('id', $orderId)
+            ->where('customer_id', $userId)
+            ->first();
+
+        $formatTanggal = function ($tanggal) {
+            return Carbon::parse($tanggal)->translatedFormat('d F Y');
+        };
+
+        $data = [
+            'unique_order' => $order->unique_order,
+            'nama_perangkat' => optional($order->proforma_invoice_item->first()->produk)->nama_produk,
+            'order_date' => $formatTanggal($order->order_date),
+            'nama' => optional($order->cp_customer)->nama,
+            'email' => optional($order->cp_customer)->email,
+            'no_telp' => optional($order->cp_customer)->no_telp,
+            'harga_perangkat' => optional($order->proforma_invoice_item->first()->produk)->harga_produk,
+            'ppn' => $order->proforma_invoice_item->sum('nilai_ppn'),
+            'deposit_layanan' => optional($order->layanan)->harga_layanan,
+            'total_biaya' => $order->total_harga,
+            'tgl_aktivasi' => Carbon::now()->translatedFormat('d F Y'),
+            'nomor_kontrak' => optional($order->kontrak)->nomor_kontrak,
+            'kit_serial_number' => $order->sn_kit ? $order->sn_kit : '-',
+        ];
+
+        return $data;
     }
 
     public static function getOrderDetail($orderId, $userId)
