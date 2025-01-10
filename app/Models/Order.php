@@ -338,9 +338,13 @@ class Order extends Model
             })
             ->values();
 
+        $imageFileName = optional($order->proforma_invoice_item->first()->produk)->gambar_order;
+        $image = $imageFileName ? asset('assets/images/' . $imageFileName) : null;
+
         $data = [
             'unique_order' => $order->unique_order,
             'nama_perangkat' => optional($order->proforma_invoice_item->first()->produk)->nama_produk,
+            'image' => $image,
             'order_date' => $formatTanggal($order->order_date),
             'riwayat_status_order' => $riwayatStatus,
         ];

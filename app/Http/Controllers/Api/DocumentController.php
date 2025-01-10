@@ -55,7 +55,7 @@ class DocumentController extends Controller
     {
         try{
             $user = JWTAuth::parseToken()->authenticate();
-            $order = Order::getOrder($id, $user->id);
+            $order = Order::getActivation($id, $user->id);
             if(!$order){
                 return $this->generateResponse('error', 'Order not found', null, 404);
             }
