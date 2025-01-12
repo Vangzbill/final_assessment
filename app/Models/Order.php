@@ -344,6 +344,7 @@ class Order extends Model
         $data = [
             'unique_order' => $order->unique_order,
             'nama_perangkat' => optional($order->proforma_invoice_item->first()->produk)->nama_produk,
+            'nama_kategori' => optional(optional($order->produk)->category)->nama_kategori,
             'image' => $image,
             'order_date' => $formatTanggal($order->order_date),
             'riwayat_status_order' => $riwayatStatus,
