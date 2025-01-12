@@ -316,25 +316,72 @@ class Order extends Model
             'order_status_history.status',
             'proforma_invoice_item',
             'proforma_invoice_item.produk',
-            'proforma_invoice_item.layanan'
+            'proforma_invoice_item.layanan',
+            'kontrak.kontrak_layanan.kontrak_nodelink.nodelink' // Added this relation
         ])->where('id', $orderId)
             ->where('customer_id', $userId)
             ->first();
 
         $formatTanggal = function ($tanggal) {
-            return Carbon::parse($tanggal)->translatedFormat('d F Y');
+            return $tanggal ? Carbon::parse($tanggal)->translatedFormat('d F Y') : null;
         };
 
-        $riwayatStatus = $order->order_status_history
+        // Define all required status orders
+        $requiredStatuses = [
+            'Pembayaran',
+            'Pengiriman',
+            'Pesanan Diterima',
+            'Aktivasi Layanan',
+            'Surat Pernyataan',
+            'Aktivasi',
+            'Pesanan Selesai'
+        ];
+
+        $existingStatuses = $order->order_status_history
             ->filter(function ($item) {
-                return $item->status->nama_status_order !== 'Order Confirmed';
+                return $item->status->nama_status_order !== 'Pesanan Diterima';
             })
-            ->map(function ($item) use ($formatTanggal) {
-                return [
-                    'status' => $item->status->nama_status_order,
-                    'keterangan' => $item->keterangan,
-                    'tanggal' => $formatTanggal($item->tanggal),
+            ->mapWithKeys(function ($item) {
+                return [$item->status->nama_status_order => $item];
+            });
+
+        $riwayatStatus = collect($requiredStatuses)
+            ->map(function ($statusName) use ($existingStatuses, $formatTanggal, $order) {
+                $existingStatus = $existingStatuses->get($statusName);
+                $baseStatus = [
+                    'status' => $statusName,
+                    'keterangan' => $existingStatus ? $existingStatus->keterangan : null,
+                    'tanggal' => $existingStatus ? $formatTanggal($existingStatus->tanggal) : null,
                 ];
+
+                switch ($statusName) {
+                    case 'Pembayaran':
+                        $baseStatus['harga'] = $order->total_harga;
+                        break;
+
+                    case 'Pengiriman':
+                        if ($existingStatus) {
+                            $baseStatus['estimasi'] = $formatTanggal(
+                                Carbon::parse($existingStatus->tanggal)->addDays(2)
+                            );
+                        }
+                        break;
+
+                    case 'Aktivasi':
+                        if ($existingStatus) {
+                            $nodelink = optional($order->kontrak)
+                                ->kontrak_layanan
+                                ->kontrak_nodelink
+                                ->nodelink;
+
+                            $baseStatus['sn_kit'] = optional($order->sn_kit);
+                            $baseStatus['latitude'] = optional($nodelink)->latitude;
+                            $baseStatus['longitude'] = optional($nodelink)->longitude;
+                        }
+                        break;
+                }
+
+                return $baseStatus;
             })
             ->values();
 

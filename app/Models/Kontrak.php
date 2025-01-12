@@ -25,4 +25,9 @@ class Kontrak extends Model
     {
         return $this->belongsTo(Order::class, 'order_id', 'id');
     }
+
+    public function kontrak_layanan()
+    {
+        return $this->hasMany(KontrakLayanan::class, 'kontrak_id', 'id');
+    }
 }

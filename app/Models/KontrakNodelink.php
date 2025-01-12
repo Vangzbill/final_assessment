@@ -20,4 +20,14 @@ class KontrakNodelink extends Model
     ];
 
     public $timestamps = false;
+
+    public function kontrak_layanan()
+    {
+        return $this->belongsTo(KontrakLayanan::class, 'kontrak_layanan_id', 'id');
+    }
+
+    public function nodelink()
+    {
+        return $this->belongsTo(Nodelink::class, 'nodelink_id', 'id');
+    }
 }
