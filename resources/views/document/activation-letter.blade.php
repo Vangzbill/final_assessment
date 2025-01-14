@@ -110,7 +110,7 @@
         </table>
         <hr style="margin-top: 20px;">
         <div class="content">
-            <p><strong>Lokasi:</strong> {{ $sid }}</p>
+            <p><strong>Lokasi:</strong> {{ $order['sid'] }}</p>
             <table>
                 <tr>
                     <td><strong>DATA PELANGGAN</strong></td>
@@ -126,7 +126,7 @@
                 </tr>
                 <tr>
                     <td>No. HP</td>
-                    <td>: {{ $order['no_hp'] }}</td>
+                    <td>: {{ $order['no_telp'] }}</td>
                 </tr>
                 <tr>
                     <td><strong>LAYANAN</strong></td>
@@ -174,13 +174,14 @@
                         <p><strong>PENYEDIA</strong></p>
                         <p><strong>PT. XYZ</strong></p>
                         {{-- <img src="assets/images/spa-ttd.jpg" width="100px" height="75px" alt="ttd" /> --}}
-                        <p><strong>XXXXXXXX</strong></p>
+                        <h1 style="font-size: 46;">{{ '' }}</h1>
+                        <p><strong>Si X</strong></p>
                         <hr>
                         <p>Manager Service Activation</p>
                     </td>
                     <td style="width: 30%;"></td>
                     <td style="width: 35%; ">
-                        <p style="margin-top: -5px; margin-bottom: 0px;">Bogor, {{ $tanggal_aktivasi }}</p>
+                        <p style="margin-top: -5px; margin-bottom: 0px;">Bogor, {{ $order['tgl_aktivasi'] }}</p>
                         <p><strong style="margin-top: -60px;">PELANGGAN</strong></p>
                         <h1 style="font-size: 37;">{{ '' }}</h1>
                         <p style="margin-top: {{ '78px' }};">

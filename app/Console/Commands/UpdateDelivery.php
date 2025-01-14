@@ -27,7 +27,13 @@ class UpdateDelivery extends Command
      */
     public function handle()
     {
-        $orders = Order::where('payment_status', 2)->get();
+        $orders = Order::where('payment_status', 2)->whereHas('order_status_history', function ($query) {
+            $query->where('status_id', 2);
+        })
+        ->whereDoesntHave('order_status_history', function ($query) {
+            $query->where('status_id', 3);
+        })->get();
+
         foreach ($orders as $order) {
             $orderHistory = new OrderStatusHistory();
             $orderHistory->order_id = $order->id;

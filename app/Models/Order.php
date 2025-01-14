@@ -278,7 +278,8 @@ class Order extends Model
             'kontrak',
             'proforma_invoice_item',
             'proforma_invoice_item.produk',
-            'proforma_invoice_item.layanan'
+            'proforma_invoice_item.layanan',
+            'kontrak.kontrak_layanan.kontrak_nodelink.nodelink'
         ])->where('id', $orderId)
             ->where('customer_id', $userId)
             ->first();
@@ -287,9 +288,28 @@ class Order extends Model
             return Carbon::parse($tanggal)->translatedFormat('d F Y');
         };
 
+        try{
+            DB::beginTransaction();
+            $orderHistory = new OrderStatusHistory();
+            $orderHistory->order_id = $order->id;
+            $orderHistory->status_id = 7;
+            $orderHistory->keterangan = 'Pesanan telah selesai';
+            $orderHistory->tanggal = now();
+            $orderHistory->save();
+
+            $order->riwayat_status_order_id = $orderHistory->id;
+            $order->save();
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $e->getMessage();
+        }
+
         $data = [
             'unique_order' => $order->unique_order,
+            'nama_perusahaan' => optional($order->customer)->nama_perusahaan,
             'nama_perangkat' => optional($order->proforma_invoice_item->first()->produk)->nama_produk,
+            'nama_layanan' => optional($order->proforma_invoice_item()->whereNotNull('layanan_id')->first()->layanan)->nama_layanan,
             'order_date' => $formatTanggal($order->order_date),
             'nama' => optional($order->cp_customer)->nama,
             'email' => optional($order->cp_customer)->email,
@@ -301,6 +321,7 @@ class Order extends Model
             'tgl_aktivasi' => Carbon::now()->translatedFormat('d F Y'),
             'nomor_kontrak' => optional($order->kontrak)->nomor_kontrak,
             'kit_serial_number' => $order->sn_kit ? $order->sn_kit : '-',
+            'sid' => optional($order->kontrak->kontrak_layanan->first()->kontrak_nodelink->first()->nodelink)->sid,
         ];
 
         return $data;
@@ -326,20 +347,18 @@ class Order extends Model
             return $tanggal ? Carbon::parse($tanggal)->translatedFormat('d F Y') : null;
         };
 
-        // Define all required status orders
         $requiredStatuses = [
             'Pembayaran',
             'Pengiriman',
             'Pesanan Diterima',
             'Aktivasi Layanan',
-            'Surat Pernyataan',
-            'Aktivasi',
+            'Surat Pernyataan Aktivasi',
             'Pesanan Selesai'
         ];
 
         $existingStatuses = $order->order_status_history
             ->filter(function ($item) {
-                return $item->status->nama_status_order !== 'Pesanan Diterima';
+                return $item->status->nama_status_order !== 'Order Diterima ';
             })
             ->mapWithKeys(function ($item) {
                 return [$item->status->nama_status_order => $item];
@@ -367,14 +386,20 @@ class Order extends Model
                         }
                         break;
 
-                    case 'Aktivasi':
+                    case 'Aktivasi Layanan':
                         if ($existingStatus) {
-                            $nodelink = optional($order->kontrak)
-                                ->kontrak_layanan
-                                ->kontrak_nodelink
-                                ->nodelink;
+                            $nodelink = null;
+                            if ($order->kontrak) {
+                                $kontrakLayanan = $order->kontrak->kontrak_layanan->first();
+                                if ($kontrakLayanan) {
+                                    $kontrakNodelink = $kontrakLayanan->kontrak_nodelink->first();
+                                    if ($kontrakNodelink) {
+                                        $nodelink = $kontrakNodelink->nodelink;
+                                    }
+                                }
+                            }
 
-                            $baseStatus['sn_kit'] = optional($order->sn_kit);
+                            $baseStatus['sn_kit'] = $order->sn_kit;
                             $baseStatus['latitude'] = optional($nodelink)->latitude;
                             $baseStatus['longitude'] = optional($nodelink)->longitude;
                         }

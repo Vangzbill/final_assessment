@@ -6,21 +6,21 @@ use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use Illuminate\Console\Command;
 
-class UpdateDelivered extends Command
+class UpdateActivation extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:update-delivered';
+    protected $signature = 'app:update-activation';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Mark order as delivered';
+    protected $description = 'Command description';
 
     /**
      * Execute the console command.
@@ -29,17 +29,17 @@ class UpdateDelivered extends Command
     {
         $order_delivery = Order::where('payment_status', 2)
         ->whereHas('order_status_history', function ($query) {
-            $query->where('status_id', 3);
+            $query->where('status_id', 5);
         })
         ->whereDoesntHave('order_status_history', function ($query) {
-            $query->where('status_id', 4);
+            $query->where('status_id', 6);
         })->get();
 
         foreach ($order_delivery as $order) {
             $orderStatusHistory = new OrderStatusHistory();
             $orderStatusHistory->order_id = $order->id;
-            $orderStatusHistory->status_id = 4;
-            $orderStatusHistory->keterangan = 'Pesanan telah diterima';
+            $orderStatusHistory->status_id = 6;
+            $orderStatusHistory->keterangan = 'Pesanan telah diaktifkan';
             $orderStatusHistory->tanggal = now();
             $orderStatusHistory->save();
 
