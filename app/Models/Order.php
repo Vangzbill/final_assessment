@@ -369,8 +369,9 @@ class Order extends Model
                 $existingStatus = $existingStatuses->get($statusName);
                 $baseStatus = [
                     'status' => $statusName,
-                    'keterangan' => $existingStatus ? $existingStatus->keterangan : null,
+                    'keterangan' => $existingStatus ? $existingStatus->keterangan : '',
                     'tanggal' => $existingStatus ? $formatTanggal($existingStatus->tanggal) : null,
+                    'is_done' => $existingStatus ? 1 : 0,
                 ];
 
                 switch ($statusName) {
@@ -381,7 +382,7 @@ class Order extends Model
                     case 'Pengiriman':
                         if ($existingStatus) {
                             $baseStatus['estimasi'] = $formatTanggal(
-                                Carbon::parse($existingStatus->tanggal)->addDays(2)
+                                Carbon::now()
                             );
                         }
                         break;
@@ -414,6 +415,7 @@ class Order extends Model
         $image = $imageFileName ? asset('assets/images/' . $imageFileName) : null;
 
         $data = [
+            'order_id' => $order->id,
             'unique_order' => $order->unique_order,
             'nama_perangkat' => optional($order->proforma_invoice_item->first()->produk)->nama_produk,
             'nama_kategori' => optional(optional($order->produk)->category)->nama_kategori,
