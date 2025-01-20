@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BillingController;
 use App\Http\Controllers\Api\DepositController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\OrderController;
@@ -74,4 +75,11 @@ Route::middleware('add.ngrok.header')->group(function(){
         Route::get('used', [DepositController::class, 'used']);
         Route::get('summary', [DepositController::class, 'summary']);
     });
+
+    Route::middleware('jwt.verify')->prefix('billing')->group(function () {
+        Route::get('summary', [BillingController::class, 'billingSummary']);
+        Route::get('detail/{id}', [BillingController::class, 'billingDetail']);
+    });
+
+    Route::get('test', [BillingController::class, 'test']);
 });

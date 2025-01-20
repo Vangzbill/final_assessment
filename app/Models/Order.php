@@ -65,12 +65,17 @@ class Order extends Model
 
     public function kontrak()
     {
-        return $this->hasOne(Kontrak::class, 'order_id', 'id');
+        return $this->hasMany(Kontrak::class, 'order_id', 'id');
     }
 
     public function riwayat_deposit()
     {
         return $this->hasOne(RiwayatDeposit::class, 'order_id', 'id');
+    }
+
+    public function billing_revenue()
+    {
+        return $this->hasMany(BillingRevenue::class, 'order_id', 'id');
     }
 
     public static function createOrder($userId, $request)

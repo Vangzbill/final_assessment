@@ -30,4 +30,9 @@ class KontrakNodelink extends Model
     {
         return $this->belongsTo(Nodelink::class, 'nodelink_id', 'id');
     }
+
+    public function billing_revenue()
+    {
+        return $this->hasMany(BillingRevenue::class, 'kontrak_nodelink_id', 'id');
+    }
 }
