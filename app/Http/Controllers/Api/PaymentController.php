@@ -111,6 +111,7 @@ class PaymentController extends Controller
         $order->payment_status = 2;
         $order->tanggal_pembayaran = now();
         $order->riwayat_status_order_id = $order_history->id;
+        $order->sid = 'SID-' . $order->unique_order;
         $order->save();
 
         $deposit = new RiwayatDeposit();

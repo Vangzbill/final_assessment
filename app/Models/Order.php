@@ -68,6 +68,11 @@ class Order extends Model
         return $this->hasOne(Kontrak::class, 'order_id', 'id');
     }
 
+    public function riwayat_deposit()
+    {
+        return $this->hasOne(RiwayatDeposit::class, 'order_id', 'id');
+    }
+
     public static function createOrder($userId, $request)
     {
         DB::beginTransaction();
