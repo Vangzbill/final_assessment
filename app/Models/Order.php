@@ -456,6 +456,12 @@ class Order extends Model
             return Carbon::parse($tanggal)->translatedFormat('d F Y');
         };
 
+        if ((float) $order->total_harga < 16000) {
+            $total_keseluruhan = $order->total_harga + 16000;
+        } else {
+            $total_keseluruhan = $order->total_harga;
+        }
+
         $data = [
             'unique_order' => $order->unique_order,
             'nama_perangkat' => optional($order->proforma_invoice_item->first()->produk)->nama_produk,
@@ -466,10 +472,12 @@ class Order extends Model
                 'no_telp' => optional($order->cp_customer)->no_telp,
             ],
             'rincian' => [
-                'harga_perangkat' => optional($order->proforma_invoice_item->first()->produk)->harga_produk,
-                'ppn' => $order->proforma_invoice_item->sum('nilai_ppn'),
                 'deposit_layanan' => optional($order->layanan)->harga_layanan,
-                'total_biaya' => $order->total_harga,
+                'biaya_asuransi' => 16000,
+                'harga_perangkat' => optional($order->proforma_invoice_item->first()->produk)->harga_produk,
+                'total_biaya' => optional($order->proforma_invoice_item->first()->produk)->harga_produk + 16000,
+                'ppn' => $order->proforma_invoice_item->sum('nilai_ppn'),
+                'total_keseluruhan' => $total_keseluruhan,
             ]
         ];
 
