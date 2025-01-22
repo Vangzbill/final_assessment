@@ -49,6 +49,7 @@ Route::middleware('add.ngrok.header')->group(function(){
         Route::post('snap/callback', [OrderController::class, 'snapCallback']);
         Route::get('cek/{id}', [OrderController::class, 'cekPayment']);
         Route::post('activate', [OrderController::class, 'activate']);
+        Route::post('delivered', [OrderController::class, 'delivered']);
     });
 
     Route::prefix('wilayah')->group(function () {

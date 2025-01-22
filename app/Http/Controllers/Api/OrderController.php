@@ -231,4 +231,19 @@ class OrderController extends Controller
             return $this->generateResponse('error', $e->getMessage(), null, 500);
         }
     }
+
+    public function delivered(Request $request)
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $order = Order::deliveredOrder($request->order_id, $user->id);
+            if (!$order) {
+                return $this->generateResponse('error', 'Failed to accept order', null, 500);
+            }
+
+            return $this->generateResponse('success', 'Order accepted successfully', $order);
+        } catch (\Exception $e) {
+            return $this->generateResponse('error', $e->getMessage(), null, 500);
+        }
+    }
 }

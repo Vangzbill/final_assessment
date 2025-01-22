@@ -387,6 +387,7 @@ class Order extends Model
                 switch ($statusName) {
                     case 'Pembayaran':
                         $baseStatus['harga'] = $order->total_harga;
+                        $baseStatus['estimasi_pengambilan'] = $order->order_date ? $formatTanggal($order->order_date) : null;
                         break;
 
                     case 'Pengiriman':
@@ -492,5 +493,31 @@ class Order extends Model
             ->first();
 
         return $order->order_status_history->last()->status_id;
+    }
+
+    public static function deliveredOrder($orderId, $userId)
+    {
+        try {
+            DB::beginTransaction();
+            $order = Order::where('id', $orderId)
+                ->where('customer_id', $userId)
+                ->first();
+
+            $orderStatusHistory = new OrderStatusHistory();
+            $orderStatusHistory->order_id = $order->id;
+            $orderStatusHistory->status_id = 4;
+            $orderStatusHistory->keterangan = 'Pesanan telah diterima';
+            $orderStatusHistory->tanggal = now();
+            $orderStatusHistory->save();
+
+            $order->riwayat_status_order_id = $orderStatusHistory->id;
+            $order->save();
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $e->getMessage();
+        }
+
+        return 'Pesanan telah diterima';
     }
 }
