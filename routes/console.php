@@ -10,5 +10,5 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::command('app:update-delivery')->everyMinute();
 // Schedule::command('app:update-delivered')->everyMinute();
 Schedule::command('app:update-activation')->everyTenSeconds();
-// Schedule::command('app:update-finished')->everyTenSeconds();
+Schedule::command('app:update-finished')->everyTenSeconds();
 Schedule::command('app:update-billing')->daily();

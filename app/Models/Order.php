@@ -298,7 +298,7 @@ class Order extends Model
             return Carbon::parse($tanggal)->translatedFormat('d F Y');
         };
 
-        try{
+        try {
             DB::beginTransaction();
             $orderHistory = new OrderStatusHistory();
             $orderHistory->order_id = $order->id;
@@ -387,7 +387,7 @@ class Order extends Model
                 switch ($statusName) {
                     case 'Pembayaran':
                         $baseStatus['harga'] = $order->total_harga;
-                        $baseStatus['estimasi_pengambilan'] = $order->order_date ? $formatTanggal($order->order_date) : null;
+                        $baseStatus['estimasi_pengambilan'] = $existingStatus ? $formatTanggal($existingStatus->tanggal) : null;
                         break;
 
                     case 'Pengiriman':
@@ -402,11 +402,14 @@ class Order extends Model
                         if ($existingStatus) {
                             $nodelink = null;
                             if ($order->kontrak) {
-                                $kontrakLayanan = $order->kontrak->kontrak_layanan->first();
-                                if ($kontrakLayanan) {
-                                    $kontrakNodelink = $kontrakLayanan->kontrak_nodelink->first();
-                                    if ($kontrakNodelink) {
-                                        $nodelink = $kontrakNodelink->nodelink;
+                                $kontrak = $order->kontrak->first();
+                                if ($kontrak && $kontrak->kontrak_layanan->isNotEmpty()) {
+                                    $kontrakLayanan = $kontrak->kontrak_layanan->first();
+                                    if ($kontrakLayanan && $kontrakLayanan->kontrak_nodelink->isNotEmpty()) {
+                                        $kontrakNodelink = $kontrakLayanan->kontrak_nodelink->first();
+                                        if ($kontrakNodelink) {
+                                            $nodelink = $kontrakNodelink->nodelink;
+                                        }
                                     }
                                 }
                             }
