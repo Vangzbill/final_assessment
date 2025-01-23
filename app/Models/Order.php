@@ -29,6 +29,7 @@ class Order extends Model
         'payment_status',
         'payment_url',
         'sn_kit',
+        'is_ttd'
     ];
 
     public $timestamps = false;
@@ -315,6 +316,8 @@ class Order extends Model
             return $e->getMessage();
         }
 
+        $initialNama = substr(optional($order->cp_customer)->nama, 0, 1);
+
         $data = [
             'unique_order' => $order->unique_order,
             'nama_perusahaan' => optional($order->customer)->nama_perusahaan,
@@ -332,6 +335,8 @@ class Order extends Model
             'nomor_kontrak' => optional($order->kontrak)->nomor_kontrak,
             'kit_serial_number' => $order->sn_kit ? $order->sn_kit : '-',
             'sid' => optional($order->kontrak->kontrak_layanan->first()->kontrak_nodelink->first()->nodelink)->sid,
+            'is_ttd' => $order->is_ttd,
+            'initial_nama' => $initialNama,
         ];
 
         return $data;

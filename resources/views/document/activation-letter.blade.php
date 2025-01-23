@@ -183,6 +183,11 @@
                     <td style="width: 35%; ">
                         <p style="margin-top: -5px; margin-bottom: 0px;">Bogor, {{ $order['tgl_aktivasi'] }}</p>
                         <p><strong style="margin-top: -60px;">PELANGGAN</strong></p>
+                        @if ($order['is_ttd'] == 1)
+                            <h1 style="font-size: 37;">{{ $order['initial_nama'] }}</h1>
+                        @else
+                            <h1 style="font-size: 37;">{{ '' }}</h1>
+                        @endif
                         <h1 style="font-size: 37;">{{ '' }}</h1>
                         <p style="margin-top: {{ '78px' }};">
                             <strong>{{ $order['nama'] }}</strong>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class DocumentController extends Controller
@@ -67,4 +68,23 @@ class DocumentController extends Controller
         }
     }
 
+    public function signature(Request $request){
+        try{
+            $user = JWTAuth::parseToken()->authenticate();
+            $order = Order::where('id', $request->order_id)->where('user_id', $user->id)->first();
+            if(!$order){
+                return $this->generateResponse('error', 'Order not found', null, 404);
+            }
+
+            DB::beginTransaction();
+            $order->is_ttd = 1;
+            $order->save();
+            DB::commit();
+
+            return $this->generateResponse('success', 'Signature saved', null, 200);
+        }catch(\Exception $e){
+            DB::rollBack();
+            return $this->generateResponse('error', $e->getMessage(), null, 500);
+        }
+    }
 }

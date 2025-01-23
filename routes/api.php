@@ -69,6 +69,7 @@ Route::middleware('add.ngrok.header')->group(function(){
         Route::get('invoice/{id}', [DocumentController::class, 'invoice']);
         Route::get('acceptance-letter/{id}', [DocumentController::class, 'acceptanceLetter']);
         Route::get('activation-letter/{id}', [DocumentController::class, 'activationLetter']);
+        Route::post('signature', [DocumentController::class, 'signature']);
     });
 
     Route::middleware('jwt.verify')->prefix('deposit')->group(function () {
