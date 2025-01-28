@@ -76,4 +76,27 @@ class BillingController extends Controller
             return $this->generateResponse('error', $e->getMessage());
         }
     }
+
+    public function detail($id){
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+
+            $billing = BillingRevenue::select([
+                'tbl_billing_revenue.id as billing_id',
+                'tbl_billing_revenue.order_id',
+                'tbl_order.sid as order_sid',
+                'tbl_order.unique_order as order_unique',
+                'tbl_billing_revenue.total_akhir as nominal',
+                'tbl_billing_revenue.jatuh_tempo'
+            ])
+                ->join('tbl_order', 'tbl_billing_revenue.order_id', '=', 'tbl_order.id')
+                ->where('tbl_order.customer_id', $user->id)
+                ->where('tbl_billing_revenue.id', $id)
+                ->first();
+
+            return $this->generateResponse('success', 'Data billing berhasil diambil', $billing);
+        } catch (\Exception $e) {
+            return $this->generateResponse('error', $e->getMessage());
+        }
+    }
 }
