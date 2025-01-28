@@ -18,6 +18,7 @@ class BillingRevenue extends Model
         'total_akhir',
         'jatuh_tempo',
         'status',
+        'bukti_ppn',
     ];
 
     public $timestamps = false;

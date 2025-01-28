@@ -20,6 +20,8 @@ class Nodelink extends Model
         'status_nodelink',
         'latitude',
         'longitude',
+        'nama_node',
+        'alamat_node',
     ];
 
     public $timestamps = false;
@@ -43,12 +45,15 @@ class Nodelink extends Model
             return false;
         }
 
+        $customer = Customer::find($user_id);
+
         try {
             DB::beginTransaction();
 
             $nodelink->latitude = $latitude;
             $nodelink->longitude = $longitude;
             $nodelink->status_nodelink = '1';
+            $nodelink->nama_node = 'Node ' . $customer->nama . $nodelink->id;
             $nodelink->save();
 
             $riwayatStatusOrder = new OrderStatusHistory();

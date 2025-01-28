@@ -27,7 +27,7 @@ class UpdateFinished extends Command
      */
     public function handle()
     {
-        $order_delivery = Order::where('payment_status', 2)
+        $order_delivery = Order::where('payment_status', 2)->where('is_ttd', 1)
         ->whereHas('order_status_history', function ($query) {
             $query->where('status_id', 6);
         })

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\BillingRevenue;
 use App\Models\KontrakNodelink;
+use App\Models\Nodelink;
+use App\Models\ProformaInvoice;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -77,7 +79,8 @@ class BillingController extends Controller
         }
     }
 
-    public function detail($id){
+    public function billingDetail($id)
+    {
         try {
             $user = JWTAuth::parseToken()->authenticate();
 
@@ -87,14 +90,39 @@ class BillingController extends Controller
                 'tbl_order.sid as order_sid',
                 'tbl_order.unique_order as order_unique',
                 'tbl_billing_revenue.total_akhir as nominal',
-                'tbl_billing_revenue.jatuh_tempo'
+                'tbl_billing_revenue.jatuh_tempo',
+                'tbl_billing_revenue.status'
             ])
                 ->join('tbl_order', 'tbl_billing_revenue.order_id', '=', 'tbl_order.id')
                 ->where('tbl_order.customer_id', $user->id)
                 ->where('tbl_billing_revenue.id', $id)
                 ->first();
 
-            return $this->generateResponse('success', 'Data billing berhasil diambil', $billing);
+            $orderId = $billing->order_id;
+            $nodelink = Nodelink::whereHas('kontrak_nodelink.kontrak_layanan.kontrak', function ($query) use ($orderId) {
+                $query->where('order_id', $orderId);
+            })
+                ->first();
+
+            $invoice = ProformaInvoice::where('order_id', $orderId)->first();
+
+            $data = [
+                'billing_id' => $billing->billing_id,
+                'order_id' => $billing->order_id,
+                'order_sid' => $billing->order_sid,
+                'order_unique' => $billing->order_unique,
+                'nominal' => $billing->nominal,
+                'jatuh_tempo' => $billing->jatuh_tempo,
+                'status' => $billing->status,
+                'recurring' => 'Ya',
+                'nama_node' => $nodelink->nama_node,
+                'latitude' => $nodelink->latitude,
+                'longitude' => $nodelink->longitude,
+                'no_invoice' => $invoice->no_proforma_invoice,
+                'tanggal_invoice' => $invoice->tanggal_proforma,
+            ];
+
+            return $this->generateResponse('success', 'Data billing berhasil diambil', $data);
         } catch (\Exception $e) {
             return $this->generateResponse('error', $e->getMessage());
         }
