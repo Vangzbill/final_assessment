@@ -94,7 +94,7 @@ class PaymentController extends Controller
 
         $order = Order::where('id', $request->order_id)
                      ->where('customer_id', $user->id)
-                     ->with('produk')
+                     ->with('produk', 'layanan')
                      ->first();
 
         if (!$order) {
@@ -149,7 +149,7 @@ class PaymentController extends Controller
         $kontrak_nodelink->nama_perusahaan = $user->nama_perusahaan;
         $kontrak_nodelink->latitude = $user->latitude;
         $kontrak_nodelink->longitude = $user->longitude;
-        $kontrak_nodelink->total_biaya = $order->total_harga;
+        $kontrak_nodelink->total_biaya = $order->layanan->harga_layanan;
         $kontrak_nodelink->created_date = now();
         $kontrak_nodelink->save();
 

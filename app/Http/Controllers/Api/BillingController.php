@@ -91,12 +91,17 @@ class BillingController extends Controller
                 'tbl_order.unique_order as order_unique',
                 'tbl_billing_revenue.total_akhir as nominal',
                 'tbl_billing_revenue.jatuh_tempo',
-                'tbl_billing_revenue.status'
+                'tbl_billing_revenue.status',
+                'tbl_billing_revenue.bukti_ppn as bukti_ppn'
             ])
                 ->join('tbl_order', 'tbl_billing_revenue.order_id', '=', 'tbl_order.id')
                 ->where('tbl_order.customer_id', $user->id)
                 ->where('tbl_billing_revenue.id', $id)
                 ->first();
+
+            if (!$billing) {
+                return $this->generateResponse('error', 'Billing tidak ditemukan');
+            }
 
             $orderId = $billing->order_id;
             $nodelink = Nodelink::whereHas('kontrak_nodelink.kontrak_layanan.kontrak', function ($query) use ($orderId) {
@@ -105,6 +110,11 @@ class BillingController extends Controller
                 ->first();
 
             $invoice = ProformaInvoice::where('order_id', $orderId)->first();
+
+            $imagePath = public_path('assets/images/' . $billing->bukti_ppn);
+            $bukti_ppn = file_exists($imagePath) && $billing->bukti_ppn
+                ? url('assets/images/' . $billing->bukti_ppn)
+                : '';
 
             $data = [
                 'billing_id' => $billing->billing_id,
@@ -120,10 +130,43 @@ class BillingController extends Controller
                 'longitude' => $nodelink->longitude,
                 'no_invoice' => $invoice->no_proforma_invoice,
                 'tanggal_invoice' => $invoice->tanggal_proforma,
+                'bukti_ppn' => $bukti_ppn
             ];
 
             return $this->generateResponse('success', 'Data billing berhasil diambil', $data);
         } catch (\Exception $e) {
+            return $this->generateResponse('error', $e->getMessage());
+        }
+    }
+
+    public function upload(Request $request){
+        try{
+            $user = JWTAuth::parseToken()->authenticate();
+            if(!$user){
+                return $this->generateResponse('error', 'User tidak ditemukan');
+            }
+
+            $billing_id = $request->billing_id;
+            $bukti_ppn = $request->file('bukti_ppn');
+
+            DB::beginTransaction();
+
+            $billing = BillingRevenue::find($billing_id);
+            if(!$billing){
+                return $this->generateResponse('error', 'Billing tidak ditemukan');
+            }
+
+            $imagePath = public_path('assets/images/');
+            $imageName = 'bukti_ppn_' . $billing_id . '.' . $bukti_ppn->getClientOriginalExtension();
+            $bukti_ppn->move($imagePath, $imageName);
+
+            $billing->bukti_ppn = $imageName;
+            $billing->save();
+            DB::commit();
+
+            return $this->generateResponse('success', 'Bukti PPN berhasil diupload');
+        } catch (\Exception $e) {
+            DB::rollBack();
             return $this->generateResponse('error', $e->getMessage());
         }
     }

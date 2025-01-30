@@ -51,11 +51,11 @@ class UpdateBilling extends Command
                 BillingRevenue::create([
                     'kontrak_nodelink_id' => $nodelink->id,
                     'order_id' => $nodelink->kontrak_layanan->kontrak->order_id,
-                    'tanggal_tagih' => Carbon::now()->subMonth()->startOfMonth(),
+                    'tanggal_tagih' => Carbon::now()->addMonth()->startOfMonth(),
                     'total_tagihan' => $nodelink->total_biaya,
                     'total_ppn' => $ppn,
                     'total_akhir' => $totalAkhir,
-                    'jatuh_tempo' => Carbon::now()->subMonth()->endOfMonth(),
+                    'jatuh_tempo' => Carbon::now()->addMonth()->endOfMonth(),
                     'status' => 'Unpaid'
                 ]);
 

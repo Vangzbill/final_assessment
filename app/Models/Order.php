@@ -79,6 +79,11 @@ class Order extends Model
         return $this->hasMany(BillingRevenue::class, 'order_id', 'id');
     }
 
+    public function proforma_invoice()
+    {
+        return $this->hasMany(ProformaInvoice::class, 'order_id', 'id');
+    }
+
     public static function createOrder($userId, $request)
     {
         DB::beginTransaction();
@@ -401,6 +406,7 @@ class Order extends Model
                                 Carbon::now()
                             );
                         }
+                        $baseStatus['estimasi_pengambilan'] = Carbon::now()->translatedFormat('d F Y');
                         break;
 
                     case 'Aktivasi Layanan':

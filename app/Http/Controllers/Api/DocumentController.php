@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\BillingRevenue;
 use App\Models\Order;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -84,6 +85,22 @@ class DocumentController extends Controller
             return $this->generateResponse('success', 'Signature saved', null, 200);
         }catch(\Exception $e){
             DB::rollBack();
+            return $this->generateResponse('error', $e->getMessage(), null, 500);
+        }
+    }
+
+    public function billingInvoice($id)
+    {
+        try{
+            $user = JWTAuth::parseToken()->authenticate();
+            $order = BillingRevenue::getBilling($id, $user->id);
+            if(!$order){
+                return $this->generateResponse('error', 'Order not found', null, 404);
+            }
+
+            $pdf = Pdf::loadView('document.billing-invoice', ['order' => $order]);
+            return $pdf->download('billing-invoice-'.$order['no_proforma_invoice'].'.pdf');
+        }catch(\Exception $e){
             return $this->generateResponse('error', $e->getMessage(), null, 500);
         }
     }

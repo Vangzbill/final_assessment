@@ -23,4 +23,8 @@ class ProformaInvoice extends Model
         'total_keseluruhan',
         'url_proforma',
     ];
+
+    public function order(){
+        return $this->belongsTo(Order::class, 'order_id', 'id');
+    }
 }

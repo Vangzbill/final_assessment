@@ -60,6 +60,7 @@ Route::middleware('add.ngrok.header')->group(function(){
     });
 
     Route::prefix('payment')->group(function () {
+        Route::middleware('jwt.verify')->post('gateway', [PaymentController::class, 'gateway']);
         Route::middleware('jwt.verify')->post('midtrans/create', [PaymentController::class, 'createPayment']);
         Route::post('midtrans/notification', [PaymentController::class, 'handleNotification'])->name('payment.notification');
         Route::middleware('jwt.verify')->get('finish', [PaymentController::class, 'finishPayment'])->name('payment.finish');
@@ -70,6 +71,7 @@ Route::middleware('add.ngrok.header')->group(function(){
         Route::get('acceptance-letter/{id}', [DocumentController::class, 'acceptanceLetter']);
         Route::get('activation-letter/{id}', [DocumentController::class, 'activationLetter']);
         Route::post('signature', [DocumentController::class, 'signature']);
+        Route::get('billing-invoice/{id}', [DocumentController::class, 'billingInvoice']);
     });
 
     Route::middleware('jwt.verify')->prefix('deposit')->group(function () {
@@ -81,7 +83,11 @@ Route::middleware('add.ngrok.header')->group(function(){
     Route::middleware('jwt.verify')->prefix('billing')->group(function () {
         Route::get('summary', [BillingController::class, 'billingSummary']);
         Route::get('detail/{id}', [BillingController::class, 'billingDetail']);
+        Route::post('upload-ppn', [BillingController::class, 'upload']);
     });
 
     Route::get('test', [BillingController::class, 'test']);
+    Route::get('tes-template', function () {
+        return view('document.billing-invoice');
+    });
 });
