@@ -337,9 +337,9 @@ class Order extends Model
             'deposit_layanan' => optional($order->layanan)->harga_layanan,
             'total_biaya' => $order->total_harga,
             'tgl_aktivasi' => Carbon::now()->translatedFormat('d F Y'),
-            'nomor_kontrak' => optional($order->kontrak)->nomor_kontrak,
+            'nomor_kontrak' => $order->kontrak->first()->nomor_kontrak,
             'kit_serial_number' => $order->sn_kit ? $order->sn_kit : '-',
-            'sid' => optional($order->kontrak->kontrak_layanan->first()->kontrak_nodelink->first()->nodelink)->sid,
+            'sid' => $order->sid,
             'is_ttd' => $order->is_ttd,
             'initial_nama' => $initialNama,
         ];
@@ -429,6 +429,10 @@ class Order extends Model
                             $baseStatus['latitude'] = optional($nodelink)->latitude;
                             $baseStatus['longitude'] = optional($nodelink)->longitude;
                         }
+                        break;
+
+                    case 'Surat Pernyataan Aktivasi':
+                        $baseStatus['is_ttd'] = $order->is_ttd;
                         break;
                 }
 

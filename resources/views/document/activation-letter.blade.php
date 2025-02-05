@@ -174,22 +174,20 @@
                         <p><strong>PENYEDIA</strong></p>
                         <p><strong>PT. XYZ</strong></p>
                         {{-- <img src="assets/images/spa-ttd.jpg" width="100px" height="75px" alt="ttd" /> --}}
-                        <h1 style="font-size: 46;">{{ '' }}</h1>
+                        <h1 style="font-size: 60;">{{ '' }}</h1>
                         <p><strong>Si X</strong></p>
                         <hr>
                         <p>Manager Service Activation</p>
                     </td>
                     <td style="width: 30%;"></td>
                     <td style="width: 35%; ">
-                        <p style="margin-top: -5px; margin-bottom: 0px;">Bogor, {{ $order['tgl_aktivasi'] }}</p>
+                        <p style="margin-top: -10px; margin-bottom: 0px;">Bogor, {{ $order['tgl_aktivasi'] }}</p>
                         <p><strong style="margin-top: -60px;">PELANGGAN</strong></p>
                         @if ($order['is_ttd'] == 1)
                             <h1 style="font-size: 37;">{{ $order['initial_nama'] }}</h1>
                         @else
                             <h1 style="font-size: 37;">{{ '' }}</h1>
                         @endif
-                        <h1 style="font-size: 37;">{{ '' }}</h1>
-                        <p style="margin-top: {{ '78px' }};">
                             <strong>{{ $order['nama'] }}</strong>
                         </p>
                     </td>
