@@ -100,7 +100,7 @@ class DocumentController extends Controller
             $order->save();
             DB::commit();
 
-            return $this->generateResponse('success', 'Signature saved', null, 200);
+            return $this->generateResponse('success', 'Signature saved', 'Surat telah ditandatangani', 200);
         }catch(\Exception $e){
             DB::rollBack();
             return $this->generateResponse('error', $e->getMessage(), null, 500);

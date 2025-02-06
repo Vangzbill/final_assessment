@@ -304,23 +304,6 @@ class Order extends Model
             return Carbon::parse($tanggal)->translatedFormat('d F Y');
         };
 
-        try {
-            DB::beginTransaction();
-            $orderHistory = new OrderStatusHistory();
-            $orderHistory->order_id = $order->id;
-            $orderHistory->status_id = 7;
-            $orderHistory->keterangan = 'Pesanan telah selesai';
-            $orderHistory->tanggal = now();
-            $orderHistory->save();
-
-            $order->riwayat_status_order_id = $orderHistory->id;
-            $order->save();
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return $e->getMessage();
-        }
-
         $initialNama = substr(optional($order->cp_customer)->nama, 0, 1);
 
         $data = [
