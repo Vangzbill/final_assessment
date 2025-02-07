@@ -163,7 +163,7 @@ class OrderController extends Controller
 
     public function detail($id)
     {
-        // try {
+        try {
             $user = JWTAuth::parseToken()->authenticate();
             $order = Order::getOrderDetail($id, $user->id);
             if (!$order) {
@@ -171,9 +171,9 @@ class OrderController extends Controller
             }
 
             return $this->generateResponse('success', 'Data retrieved successfully', $order);
-        // } catch (\Exception $e) {
-        //     return $this->generateResponse('error', $e->getMessage(), null, 500);
-        // }
+        } catch (\Exception $e) {
+            return $this->generateResponse('error', $e->getMessage(), null, 500);
+        }
     }
 
     public function summary($id)

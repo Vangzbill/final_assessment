@@ -55,23 +55,48 @@ class BillingController extends Controller
         }
     }
 
-    public function billingSummary()
+    public function billingSummary(Request $request)
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
 
-            $billings = BillingRevenue::select([
+            $query = BillingRevenue::select([
                 'tbl_billing_revenue.id as billing_id',
                 'tbl_billing_revenue.order_id',
                 'tbl_order.sid as order_sid',
                 'tbl_order.unique_order as order_unique',
                 'tbl_billing_revenue.total_akhir as nominal',
-                'tbl_billing_revenue.jatuh_tempo'
+                'tbl_billing_revenue.jatuh_tempo',
+                'tbl_billing_revenue.status',
+                'tbl_billing_revenue.bukti_ppn'
             ])
                 ->join('tbl_order', 'tbl_billing_revenue.order_id', '=', 'tbl_order.id')
                 ->where('tbl_order.customer_id', $user->id)
-                ->orderBy('tbl_billing_revenue.jatuh_tempo', 'desc')
-                ->get();
+                ->orderBy('tbl_billing_revenue.jatuh_tempo', 'desc');
+
+            if ($request->filled('order_sid')) {
+                $query->where('tbl_order.sid', 'LIKE', '%' . $request->order_sid . '%');
+            }
+
+            if ($request->filled('pembayaran')) {
+                $status = strtolower($request->pembayaran);
+                if (in_array($status, ['unpaid', 'paid'])) {
+                    $query->where('tbl_billing_revenue.status', ucfirst($status));
+                }
+            }
+
+            if ($request->filled('pelunasan')) {
+                if ($request->pelunasan == 'unpaid') {
+                    $query->where('tbl_billing_revenue.bukti_ppn', '==', null);
+                } elseif ($request->pelunasan == 'paid') {
+                    $query->whereNotNull('tbl_billing_revenue.bukti_ppn');
+                }
+            }
+
+            $perPage = $request->get('per_page', 10);
+            $page = $request->get('page', 1);
+
+            $billings = $query->paginate($perPage, ['*'], 'page', $page);
 
             return $this->generateResponse('success', 'Data billing berhasil diambil', $billings);
         } catch (\Exception $e) {

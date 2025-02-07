@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BillingController;
 use App\Http\Controllers\Api\DepositController;
 use App\Http\Controllers\Api\DocumentController;
+use App\Http\Controllers\Api\NodelinkController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProductController;
@@ -84,6 +85,7 @@ Route::middleware('add.ngrok.header')->group(function(){
         Route::get('summary', [BillingController::class, 'billingSummary']);
         Route::get('detail/{id}', [BillingController::class, 'billingDetail']);
         Route::post('upload-ppn', [BillingController::class, 'upload']);
+        Route::get('nodelink', [NodelinkController::class, 'index']);
     });
 
     Route::get('test', [BillingController::class, 'test']);
