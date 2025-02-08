@@ -58,6 +58,10 @@ class BillingController extends Controller
     public function billingSummary(Request $request)
     {
         try {
+            if (!$token = JWTAuth::getToken()) {
+                return $this->generateResponse('error', 'Token not provided', null, 401);
+            }
+
             $user = JWTAuth::parseToken()->authenticate();
 
             $query = BillingRevenue::select([
@@ -74,23 +78,13 @@ class BillingController extends Controller
                 ->where('tbl_order.customer_id', $user->id)
                 ->orderBy('tbl_billing_revenue.jatuh_tempo', 'desc');
 
-            if ($request->filled('order_sid')) {
-                $query->where('tbl_order.sid', 'LIKE', '%' . $request->order_sid . '%');
-            }
+            if ($request->filled('search')) {
+                $search = $request->search;
 
-            if ($request->filled('pembayaran')) {
-                $status = strtolower($request->pembayaran);
-                if (in_array($status, ['unpaid', 'paid'])) {
-                    $query->where('tbl_billing_revenue.status', ucfirst($status));
-                }
-            }
-
-            if ($request->filled('pelunasan')) {
-                if ($request->pelunasan == 'unpaid') {
-                    $query->where('tbl_billing_revenue.bukti_ppn', '==', null);
-                } elseif ($request->pelunasan == 'paid') {
-                    $query->whereNotNull('tbl_billing_revenue.bukti_ppn');
-                }
+                $query->where(function ($q) use ($search) {
+                    $q->whereRaw('LOWER(tbl_order.unique_order) LIKE ?', ['%' . strtolower($search) . '%'])
+                      ->orWhere('tbl_billing_revenue.total_akhir', 'like', '%' . $search . '%');
+                });
             }
 
             $perPage = $request->get('per_page', 10);
@@ -98,11 +92,26 @@ class BillingController extends Controller
 
             $billings = $query->paginate($perPage, ['*'], 'page', $page);
 
-            return $this->generateResponse('success', 'Data billing berhasil diambil', $billings);
+            $pagination = [
+                'current_page' => $billings->currentPage(),
+                'total_pages' => $billings->lastPage(),
+                'total_items' => $billings->total(),
+                'per_page' => $billings->perPage(),
+            ];
+
+            return $this->generateResponse('success', 'Data billing berhasil diambil', [
+                'billings' => $billings->items(),
+                'pagination' => $pagination,
+            ]);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+            return $this->generateResponse('error', 'Token has expired', null, 401);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+            return $this->generateResponse('error', 'Token is invalid', null, 401);
         } catch (\Exception $e) {
-            return $this->generateResponse('error', $e->getMessage());
+            return $this->generateResponse('error', $e->getMessage(), null, 500);
         }
     }
+
 
     public function billingDetail($id)
     {

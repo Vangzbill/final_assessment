@@ -341,7 +341,7 @@ class Order extends Model
             'proforma_invoice_item',
             'proforma_invoice_item.produk',
             'proforma_invoice_item.layanan',
-            'kontrak.kontrak_layanan.kontrak_nodelink.nodelink' // Added this relation
+            'kontrak.kontrak_layanan.kontrak_nodelink.nodelink'
         ])->where('id', $orderId)
             ->where('customer_id', $userId)
             ->first();
@@ -350,14 +350,21 @@ class Order extends Model
             return $tanggal ? Carbon::parse($tanggal)->translatedFormat('d F Y') : null;
         };
 
-        $requiredStatuses = [
-            'Pembayaran',
-            'Pengiriman',
-            'Pesanan Diterima',
-            'Aktivasi Layanan',
-            'Surat Pernyataan Aktivasi',
-            'Pesanan Selesai'
-        ];
+        $isCanceled = $order->order_status_history
+            ->contains(function ($item) {
+                return $item->status->nama_status_order === 'Pesanan Dibatalkan';
+            });
+
+        $requiredStatuses = $isCanceled
+            ? ['Pesanan Dibatalkan', 'Pesanan Selesai']
+            : [
+                'Pembayaran',
+                'Pengiriman',
+                'Pesanan Diterima',
+                'Aktivasi Layanan',
+                'Surat Pernyataan Aktivasi',
+                'Pesanan Selesai'
+            ];
 
         $existingStatuses = $order->order_status_history
             ->filter(function ($item) {
