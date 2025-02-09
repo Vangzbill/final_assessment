@@ -56,7 +56,7 @@ class DocumentController extends Controller
 
     public function activationLetter($id)
     {
-        // try{
+        try{
             $user = JWTAuth::parseToken()->authenticate();
             $order = Order::getActivation($id, $user->id);
             if(!$order){
@@ -65,9 +65,25 @@ class DocumentController extends Controller
 
             $pdf = Pdf::loadView('document.activation-letter', ['order' => $order]);
             return $pdf->download('activation-letter-'.$order['unique_order'].'.pdf');
-        // }catch(\Exception $e){
-        //     return $this->generateResponse('error', $e->getMessage(), null, 500);
-        // }
+        }catch(\Exception $e){
+            return $this->generateResponse('error', $e->getMessage(), null, 500);
+        }
+    }
+
+    public function orderDocument($id)
+    {
+        try{
+            $user = JWTAuth::parseToken()->authenticate();
+            $order = Order::getOrderSummary($id, $user->id);
+            if(!$order){
+                return $this->generateResponse('error', 'Order not found', null, 404);
+            }
+
+            $pdf = Pdf::loadView('document.order-doc', ['data' => $order]);
+            return $pdf->download('order-document-'.$order['unique_order'].'.pdf');
+        }catch(\Exception $e){
+            return $this->generateResponse('error', $e->getMessage(), null, 500);
+        }
     }
 
     public function signature(Request $request){

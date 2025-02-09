@@ -48,14 +48,7 @@ class CancelOrder extends Command
                 $orderHistory->tanggal = now();
                 $orderHistory->save();
 
-                $orderHistory1 = new OrderStatusHistory();
-                $orderHistory1->order_id = $order->id;
-                $orderHistory1->status_id = 7;
-                $orderHistory1->keterangan = 'Pesanan telah selesai';
-                $orderHistory1->tanggal = now();
-                $orderHistory1->save();
-
-                $order->riwayat_status_order_id = $orderHistory1->id;
+                $order->riwayat_status_order_id = $orderHistory->id;
                 $order->save();
             }
         }

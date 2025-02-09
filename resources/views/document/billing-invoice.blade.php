@@ -133,7 +133,7 @@
         <tr>
             <td class="logo-cell">
                 <div class="logo">
-                    <img src="assets/images/logo.png" width="200" height="100" alt="logo xyz" />
+                    <img src="assets/images/logo_dark.png" width="200" height="100" alt="logo xyz" />
                 </div>
             </td>
             <td class="company-header">

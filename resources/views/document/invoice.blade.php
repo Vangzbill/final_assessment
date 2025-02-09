@@ -15,7 +15,7 @@
 </head>
 <body>
     <div class="invoice-header">
-        <img src="assets/images/logo.png" width="200" height="100" alt="logo xyz" />
+        <img src="assets/images/logo_dark.png" width="200" height="100" alt="logo xyz" />
         <div>
             <h1>Invoice</h1>
             <p>Order {{ $order['order_id'] }}</p>

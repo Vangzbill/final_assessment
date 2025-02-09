@@ -356,7 +356,7 @@ class Order extends Model
             });
 
         $requiredStatuses = $isCanceled
-            ? ['Pesanan Dibatalkan', 'Pesanan Selesai']
+            ? ['Pembayaran' , 'Pesanan Dibatalkan']
             : [
                 'Pembayaran',
                 'Pengiriman',
@@ -375,7 +375,7 @@ class Order extends Model
             });
 
         $riwayatStatus = collect($requiredStatuses)
-            ->map(function ($statusName) use ($existingStatuses, $formatTanggal, $order) {
+            ->map(function ($statusName) use ($existingStatuses, $formatTanggal, $order, $isCanceled) {
                 $existingStatus = $existingStatuses->get($statusName);
                 $baseStatus = [
                     'status' => $statusName,
@@ -383,6 +383,10 @@ class Order extends Model
                     'tanggal' => $existingStatus ? $formatTanggal($existingStatus->tanggal) : null,
                     'is_done' => $existingStatus ? 1 : 0,
                 ];
+
+                if ($isCanceled && $statusName === 'Pembayaran') {
+                    $baseStatus['is_done'] = 2;
+                }
 
                 switch ($statusName) {
                     case 'Pembayaran':
@@ -393,10 +397,10 @@ class Order extends Model
                     case 'Pengiriman':
                         if ($existingStatus) {
                             $baseStatus['estimasi'] = $formatTanggal(
-                                Carbon::now()
+                                $order->order_date
                             );
                         }
-                        $baseStatus['estimasi_pengambilan'] = Carbon::now()->translatedFormat('d F Y');
+                        $baseStatus['estimasi_pengambilan'] = $formatTanggal($order->order_date);
                         break;
 
                     case 'Aktivasi Layanan':
@@ -472,6 +476,7 @@ class Order extends Model
         }
 
         $data = [
+            'order_id' => $order->id,
             'unique_order' => $order->unique_order,
             'nama_perangkat' => optional($order->proforma_invoice_item->first()->produk)->nama_produk,
             'order_date' => $formatTanggal($order->order_date),

@@ -40,26 +40,33 @@ class UpdateBilling extends Command
                           ->from('tbl_billing_revenue')
                           ->whereRaw('tbl_billing_revenue.kontrak_nodelink_id = tbl_kontrak_nodelink.id');
                 })
-                ->with(['kontrak_layanan' ,'kontrak_layanan.kontrak' ,'kontrak_layanan.kontrak.order'])
+                ->with(['kontrak_layanan', 'kontrak_layanan.kontrak', 'kontrak_layanan.kontrak.order'])
                 ->get();
 
             $count = 0;
             foreach ($monthOldNodelinks as $nodelink) {
-                $ppn = round($nodelink->total_biaya * 0.11);
-                $totalAkhir = $nodelink->total_biaya + $ppn;
+                $existingBilling = BillingRevenue::where(function($query) use ($nodelink) {
+                    $query->where('kontrak_nodelink_id', $nodelink->id)
+                          ->orWhere('order_id', $nodelink->kontrak_layanan->kontrak->order_id);
+                })->exists();
 
-                BillingRevenue::create([
-                    'kontrak_nodelink_id' => $nodelink->id,
-                    'order_id' => $nodelink->kontrak_layanan->kontrak->order_id,
-                    'tanggal_tagih' => Carbon::now()->addMonth()->startOfMonth(),
-                    'total_tagihan' => $nodelink->total_biaya,
-                    'total_ppn' => $ppn,
-                    'total_akhir' => $totalAkhir,
-                    'jatuh_tempo' => Carbon::now()->addMonth()->endOfMonth(),
-                    'status' => 'Unpaid'
-                ]);
+                if (!$existingBilling) {
+                    $ppn = round($nodelink->total_biaya * 0.11);
+                    $totalAkhir = $nodelink->total_biaya + $ppn;
 
-                $count++;
+                    BillingRevenue::create([
+                        'kontrak_nodelink_id' => $nodelink->id,
+                        'order_id' => $nodelink->kontrak_layanan->kontrak->order_id,
+                        'tanggal_tagih' => Carbon::now()->startOfMonth(),
+                        'total_tagihan' => $nodelink->total_biaya,
+                        'total_ppn' => $ppn,
+                        'total_akhir' => $totalAkhir,
+                        'jatuh_tempo' => Carbon::now()->endOfMonth(),
+                        'status' => 'Unpaid'
+                    ]);
+
+                    $count++;
+                }
             }
 
             DB::commit();

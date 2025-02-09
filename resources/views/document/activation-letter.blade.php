@@ -97,7 +97,7 @@
         <table style="width: 100%; display: table; border: 1px solid #000">
             <tr style="width: 100%;">
                 <td style="width: 20%; text-align: left; border-right: 1px solid #000;">
-                    <img src="assets/images/logo.png" height="90" alt="telkomsat" />
+                    <img src="assets/images/logo_dark.png" height="90" alt="telkomsat" />
                 </td>
                 <td style="width: 80%; text-align: center">
                     <div style="display: inline-block">
