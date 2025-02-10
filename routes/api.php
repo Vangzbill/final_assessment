@@ -65,6 +65,8 @@ Route::middleware('add.ngrok.header')->group(function(){
         Route::middleware('jwt.verify')->post('midtrans/create', [PaymentController::class, 'createPayment']);
         Route::post('midtrans/notification', [PaymentController::class, 'handleNotification'])->name('payment.notification');
         Route::middleware('jwt.verify')->get('finish', [PaymentController::class, 'finishPayment'])->name('payment.finish');
+        Route::middleware('jwt.verify')->post('pay-billing', [PaymentController::class, 'payBilling']);
+        Route::middleware('jwt.verify')->get('billing-finish', [PaymentController::class, 'finishBilling'])->name('billing.finish');
     });
 
     Route::middleware('jwt.verify')->prefix('document')->group(function () {

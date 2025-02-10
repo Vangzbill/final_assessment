@@ -29,7 +29,9 @@ class Order extends Model
         'payment_status',
         'payment_url',
         'sn_kit',
-        'is_ttd'
+        'sid',
+        'is_ttd',
+        'nama_node'
     ];
 
     public $timestamps = false;

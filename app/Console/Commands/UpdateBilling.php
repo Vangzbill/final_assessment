@@ -34,7 +34,7 @@ class UpdateBilling extends Command
         try {
             DB::beginTransaction();
 
-            $monthOldNodelinks = KontrakNodelink::whereDate('created_date', '<=', Carbon::now()->subMonth())
+            $monthOldNodelinks = KontrakNodelink::whereDate('created_date', '>=', Carbon::now()->subMonth())
                 ->whereNotExists(function ($query) {
                     $query->select(DB::raw(1))
                           ->from('tbl_billing_revenue')
@@ -45,12 +45,12 @@ class UpdateBilling extends Command
 
             $count = 0;
             foreach ($monthOldNodelinks as $nodelink) {
-                $existingBilling = BillingRevenue::where(function($query) use ($nodelink) {
-                    $query->where('kontrak_nodelink_id', $nodelink->id)
-                          ->orWhere('order_id', $nodelink->kontrak_layanan->kontrak->order_id);
-                })->exists();
+                // $existingBilling = BillingRevenue::where(function($query) use ($nodelink) {
+                //     $query->where('kontrak_nodelink_id', $nodelink->id)
+                //           ->orWhere('order_id', $nodelink->kontrak_layanan->kontrak->order_id);
+                // })->exists();
 
-                if (!$existingBilling) {
+                // if (!$existingBilling) {
                     $ppn = round($nodelink->total_biaya * 0.11);
                     $totalAkhir = $nodelink->total_biaya + $ppn;
 
@@ -66,7 +66,7 @@ class UpdateBilling extends Command
                     ]);
 
                     $count++;
-                }
+                // }
             }
 
             DB::commit();

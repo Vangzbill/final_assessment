@@ -28,12 +28,12 @@ class NodelinkController extends Controller
             $user = JWTAuth::parseToken()->authenticate();
 
             $nodelink = Order::where('customer_id', $user->id)
-                ->whereNotNull('sid')
+                ->whereNotNull('nama_node')
                 ->where('payment_status', 2)
                 ->whereHas('order_status_history', function ($query) {
                     $query->where('status_id', 7);
                 })
-                ->select('sid')->get();
+                ->select('nama_node')->get();
 
             return $this->generateResponse('success', 'Data berhasil diambil', $nodelink);
         } catch (\Exception $e) {

@@ -50,10 +50,14 @@ class Nodelink extends Model
         try {
             DB::beginTransaction();
 
+            $inisial_perusahaan = implode('', array_map(function($word) {
+                return strtoupper(substr($word, 0, 1));
+            }, explode(' ', $customer->nama_perusahaan)));
+
             $nodelink->latitude = $latitude;
             $nodelink->longitude = $longitude;
             $nodelink->status_nodelink = '1';
-            $nodelink->nama_node = 'Node ' . $customer->nama . $nodelink->id;
+            $nodelink->nama_node = 'Node ' . $inisial_perusahaan . '-' . $nodelink->id;
             $nodelink->save();
 
             $riwayatStatusOrder = new OrderStatusHistory();
@@ -65,6 +69,7 @@ class Nodelink extends Model
 
             $order = Order::find($order_id);
             $order->riwayat_status_order_id = $riwayatStatusOrder->id;
+            $order->nama_node = $nodelink->nama_node;
             $order->save();
 
             DB::commit();

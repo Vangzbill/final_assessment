@@ -69,6 +69,7 @@ class BillingController extends Controller
                 'tbl_billing_revenue.order_id',
                 'tbl_order.sid as order_sid',
                 'tbl_order.unique_order as order_unique',
+                'tbl_order.nama_node',
                 'tbl_billing_revenue.total_akhir as nominal',
                 'tbl_billing_revenue.jatuh_tempo',
                 'tbl_billing_revenue.status',
@@ -76,14 +77,36 @@ class BillingController extends Controller
             ])
                 ->join('tbl_order', 'tbl_billing_revenue.order_id', '=', 'tbl_order.id')
                 ->where('tbl_order.customer_id', $user->id)
+                ->whereNotNull('tbl_order.nama_node')
                 ->orderBy('tbl_billing_revenue.jatuh_tempo', 'desc');
+
+            if ($request->filled('nama_node')) {
+                $query->where('tbl_order.nama_node', 'LIKE', '%' . $request->nama_node . '%');
+            }
+
+            if ($request->filled('pembayaran')) {
+                $status = strtolower($request->pembayaran);
+                if (in_array($status, ['unpaid', 'paid'])) {
+                    $query->where('tbl_billing_revenue.status', ucfirst($status));
+                }
+            }
+
+            if ($request->filled('pelunasan') && $request->pelunasan === 'paid') {
+                $query->whereNotNull('tbl_billing_revenue.bukti_ppn');
+            } elseif ($request->filled('pelunasan') && $request->pelunasan === 'unpaid') {
+                $query->whereNull('tbl_billing_revenue.bukti_ppn');
+            }
 
             if ($request->filled('search')) {
                 $search = $request->search;
 
                 $query->where(function ($q) use ($search) {
-                    $q->whereRaw('LOWER(tbl_order.unique_order) LIKE ?', ['%' . strtolower($search) . '%'])
-                      ->orWhere('tbl_billing_revenue.total_akhir', 'like', '%' . $search . '%');
+                    $numericSearch = preg_replace('/[^\d]/', '', $search);
+
+                    $alphanumericSearch = preg_replace('/[^a-zA-Z0-9\-]/', '', $search);
+                    
+                    $q->whereRaw('LOWER(tbl_order.unique_order) LIKE ?', ['%' . strtolower($alphanumericSearch) . '%'])
+                        ->orWhere('tbl_billing_revenue.total_akhir', 'like', '%' . $numericSearch . '%');
                 });
             }
 
@@ -111,7 +134,6 @@ class BillingController extends Controller
             return $this->generateResponse('error', $e->getMessage(), null, 500);
         }
     }
-
 
     public function billingDetail($id)
     {
@@ -173,10 +195,11 @@ class BillingController extends Controller
         }
     }
 
-    public function upload(Request $request){
-        try{
+    public function upload(Request $request)
+    {
+        try {
             $user = JWTAuth::parseToken()->authenticate();
-            if(!$user){
+            if (!$user) {
                 return $this->generateResponse('error', 'User tidak ditemukan');
             }
 
@@ -186,7 +209,7 @@ class BillingController extends Controller
             DB::beginTransaction();
 
             $billing = BillingRevenue::find($billing_id);
-            if(!$billing){
+            if (!$billing) {
                 return $this->generateResponse('error', 'Billing tidak ditemukan');
             }
 

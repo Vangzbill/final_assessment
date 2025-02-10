@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\BillingRevenue;
 use App\Models\Invoice;
 use App\Models\Kontrak;
 use App\Models\KontrakLayanan;
@@ -177,7 +178,55 @@ class PaymentController extends Controller
         $invoice->tanggal_jatuh_tempo = now()->addDays(10);
         $invoice->save();
 
+        $billing_revenue = new BillingRevenue();
+        $billing_revenue->kontrak_nodelink_id = $kontrak_nodelink->id;
+        $billing_revenue->order_id = $order->id;
+        $billing_revenue->tanggal_tagih = now();
+        $billing_revenue->total_ppn = 16000;
+        $billing_revenue->total_tagihan = $order->total_harga;
+        $billing_revenue->total_akhir = $order->total_harga + 16000;
+        $billing_revenue->jatuh_tempo = now()->addDays(10);
+        $billing_revenue->status = 'Paid';
+        $billing_revenue->tanggal_bayar = now();
+        $billing_revenue->save();
+
         return redirect()->away('https://Vangzbill.github.io/test-payment');
     }
 
+    public function payBilling(Request $request)
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+        if ($user) {
+            $billingId = $request->billing_id;
+            $paymentMidtrans = Payment::paymentBillingMidtrans($billingId, $user);
+            if ($paymentMidtrans) {
+                return $this->generateResponse('success', 'Payment URL generated', $paymentMidtrans, 200);
+            } else {
+                return $this->generateResponse('error', 'Failed to generate payment', null, 500);
+            }
+        }
+        return $this->generateResponse('error', 'Unauthorized', null, 401);
+    }
+
+    public function finishBilling(Request $request)
+    {
+        $token = $request->query('token');
+
+        if (!$token || !JWTAuth::setToken($token)->check()) {
+            return $this->generateResponse('error', 'Unauthorized', null, 401);
+        }
+
+        $user = JWTAuth::authenticate($token);
+
+        $billing = BillingRevenue::find($request->billing_id);
+        if (!$billing) {
+            return $this->generateResponse('error', 'Billing not found', null, 404);
+        }
+
+        $billing->status = 'Paid';
+        $billing->tanggal_bayar = now();
+        $billing->save();
+
+        return redirect()->away('https://Vangzbill.github.io/test-payment');
+    }
 }

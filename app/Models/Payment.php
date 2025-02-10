@@ -82,4 +82,70 @@ class Payment extends Model
             return null;
         }
     }
+
+    public static function paymentBillingMidtrans($billing_id, $user_id){
+        try{
+            $server_key = env('MIDTRANS_SERVER_KEY');
+            $client_key = env('MIDTRANS_CLIENT_KEY');
+            Config::$serverKey = $server_key;
+            Config::$clientKey = $client_key;
+            Config::$isProduction = false;
+            $billing = BillingRevenue::find($billing_id);
+            $gross_amount = $billing->total_akhir;
+            $order_id = $billing->order_id;
+            $order = Order::find($order_id);
+            $m_layanan_id = $order->layanan_id;
+            $layanan = Service::find($m_layanan_id);
+            $m_customer_id = $user_id;
+            $customer = Customer::find($m_customer_id);
+            $data_order = [
+                'transaction_details' => [
+                    'order_id' => $billing_id,
+                    'gross_amount' => $gross_amount,
+                ],
+                'item_details' => [
+                    [
+                        'id' => $m_layanan_id,
+                        'price' => $gross_amount,
+                        'quantity' => 1,
+                        'name' => $layanan->nama_layanan,
+                    ]
+                ],
+                'customer_details' => [
+                    'first_name' => $customer->first()->nama_perusahaan,
+                    'last_name' => '-',
+                    'email' => $customer->first()->email_perusahaan,
+                    'phone' => $customer->first()->no_telp_perusahaan,
+                ],
+                'callbacks' => [
+                    'finish' => route('billing.finish', [
+                        'billing_id' => $billing_id,
+                        'token' => JWTAuth::fromUser($customer->first())
+                    ]),
+                    'notification' => route('payment.notification'),
+                ]
+            ];
+
+            Config::$curlOptions = [
+                CURLOPT_SSL_VERIFYPEER => false
+            ];
+            Config::$isSanitized = true;
+            Config::$is3ds = true;
+            $snapToken = Http::withOptions(['verify' => false])->withHeaders([
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Basic ' . base64_encode($server_key . ':'),
+            ])->post('https://app.sandbox.midtrans.com/snap/v1/transactions', $data_order)->json()['token'];
+
+            $payment_url = 'https://app.sandbox.midtrans.com/snap/v4/redirection/' . $snapToken . '#/payment-list';
+
+            return $payment_url;
+        }catch(Exception $e){
+            Log::error('Error occurred while retrieving Snap token: ' . $e->getMessage(), [
+                'billing_id' => $billing_id,
+                'user_id' => $user_id,
+            ]);
+            return null;
+        }
+    }
 }
