@@ -232,6 +232,20 @@ class OrderController extends Controller
         }
     }
 
+    public function address(Request $request){
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $order = Nodelink::addAddressNode($request->order_id, $user->id, $request->provinsi, $request->kabupaten);
+            if (!$order) {
+                return $this->generateResponse('error', 'Failed to add address node', null, 500);
+            }
+
+            return $this->generateResponse('success', 'Add address node successfully', $order);
+        } catch (\Exception $e) {
+            return $this->generateResponse('error', $e->getMessage(), null, 500);
+        }
+    }
+
     public function delivered(Request $request)
     {
         try {

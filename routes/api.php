@@ -51,6 +51,7 @@ Route::middleware('add.ngrok.header')->group(function(){
         Route::get('cek/{id}', [OrderController::class, 'cekPayment']);
         Route::post('activate', [OrderController::class, 'activate']);
         Route::post('delivered', [OrderController::class, 'delivered']);
+        Route::post('address', [OrderController::class, 'address']);
     });
 
     Route::prefix('wilayah')->group(function () {

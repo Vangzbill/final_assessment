@@ -104,7 +104,7 @@ class BillingController extends Controller
                     $numericSearch = preg_replace('/[^\d]/', '', $search);
 
                     $alphanumericSearch = preg_replace('/[^a-zA-Z0-9\-]/', '', $search);
-                    
+
                     $q->whereRaw('LOWER(tbl_order.unique_order) LIKE ?', ['%' . strtolower($alphanumericSearch) . '%'])
                         ->orWhere('tbl_billing_revenue.total_akhir', 'like', '%' . $numericSearch . '%');
                 });
@@ -145,6 +145,8 @@ class BillingController extends Controller
                 'tbl_billing_revenue.order_id',
                 'tbl_order.sid as order_sid',
                 'tbl_order.unique_order as order_unique',
+                'tbl_order.nama_node',
+                'tbl_order.alamat_node',
                 'tbl_billing_revenue.total_akhir as nominal',
                 'tbl_billing_revenue.jatuh_tempo',
                 'tbl_billing_revenue.status',
@@ -177,11 +179,12 @@ class BillingController extends Controller
                 'order_id' => $billing->order_id,
                 'order_sid' => $billing->order_sid,
                 'order_unique' => $billing->order_unique,
+                'nama_node' => $nodelink->nama_node,
+                'alamat_node' => $nodelink->alamat_node,
                 'nominal' => $billing->nominal,
                 'jatuh_tempo' => $billing->jatuh_tempo,
                 'status' => $billing->status,
                 'recurring' => 'Ya',
-                'nama_node' => $nodelink->nama_node,
                 'latitude' => $nodelink->latitude,
                 'longitude' => $nodelink->longitude,
                 'no_invoice' => $invoice->no_proforma_invoice,

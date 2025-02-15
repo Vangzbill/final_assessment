@@ -79,4 +79,36 @@ class Nodelink extends Model
             return false;
         }
     }
+
+    public static function addAddressNode($order_id, $user_id, $provinsi, $kabupaten)
+    {
+        $nodelink = Nodelink::whereNull('alamat_node')
+            ->whereHas('kontrak_nodelink.kontrak_layanan.kontrak', function($query) use ($order_id) {
+                $query->where('order_id', $order_id);
+            })
+            ->first();
+
+        if(!$nodelink) {
+            return false;
+        }
+
+        $customer = Customer::find($user_id);
+
+        try {
+            DB::beginTransaction();
+
+            $nodelink->alamat_node = $provinsi . ', ' . $kabupaten;
+            $nodelink->save();
+
+            $order = Order::find($order_id);
+            $order->alamat_node = $nodelink->alamat_node;
+            $order->save();
+
+            DB::commit();
+            return true;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return false;
+        }
+    }
 }
