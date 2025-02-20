@@ -109,7 +109,7 @@ class Order extends Model
                 'alamat_customer_id' => 0,
                 'cp_customer_id' => $cp_customer->id,
                 'quantity' => 1,
-                'total_harga' => ($harga_perangkat * 0.11) + $harga_layanan + $harga_perangkat + 16000,
+                'total_harga' => ($harga_perangkat * 0.11) + $harga_layanan + $harga_perangkat + ($harga_layanan * 0.11) + 16000,
                 'order_date' => Carbon::now(),
                 'unique_order' => 'ORD' . $userId . '-' . Carbon::now()->format('YmdHis'),
                 'sn_kit' => 'KITSN' . $userId . '-' . (Order::max('id') + 1) . '-' . Carbon::now()->format('YmdHis'),
@@ -137,8 +137,8 @@ class Order extends Model
                 'biaya_perangkat' => $harga_perangkat,
                 'deposit_layanan' => $harga_layanan,
                 'biaya_pengiriman' => 0,
-                'ppn' => $harga_perangkat * 0.11,
-                'total_keseluruhan' => $harga_perangkat + ($harga_perangkat * 0.11) + $harga_layanan + 16000,
+                'ppn' => ($harga_perangkat * 0.11) + ($harga_layanan * 0.11),
+                'total_keseluruhan' => $harga_perangkat + ($harga_perangkat * 0.11) + $harga_layanan + ($harga_layanan * 0.11) + 16000,
             ]);
 
             // $proforma_invoice_layanan = ProformaInvoice::create([
@@ -169,8 +169,8 @@ class Order extends Model
                 'layanan_id' => $layanan->id,
                 'quantity' => 1,
                 'nilai_pokok' => $harga_layanan,
-                'nilai_ppn' => 0,
-                'total_bayar' => $harga_layanan,
+                'nilai_ppn' => $harga_layanan * 0.11,
+                'total_bayar' => $harga_layanan + ($harga_layanan * 0.11),
             ]);
 
             if (!$order) {

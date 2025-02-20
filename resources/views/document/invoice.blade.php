@@ -56,7 +56,7 @@
 
         <div class="invoice-total">
             <p>Subtotal: Rp {{ number_format($order['harga_perangkat'] + $order['deposit_layanan'], 0, ',', '.') }}</p>
-            <p>PPN (10%): Rp {{ number_format($order['ppn'], 0, ',', '.') }}</p>
+            <p>PPN (11%): Rp {{ number_format($order['ppn'], 0, ',', '.') }}</p>
             <h3>Total: Rp {{ number_format($order['total_biaya'], 0, ',', '.') }}</h3>
         </div>
     </div>

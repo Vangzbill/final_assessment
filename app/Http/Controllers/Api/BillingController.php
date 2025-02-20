@@ -172,7 +172,7 @@ class BillingController extends Controller
             $imagePath = public_path('assets/images/' . $billing->bukti_ppn);
             $bukti_ppn = file_exists($imagePath) && $billing->bukti_ppn
                 ? url('assets/images/' . $billing->bukti_ppn)
-                : '';
+                : null;
 
             $data = [
                 'billing_id' => $billing->billing_id,
