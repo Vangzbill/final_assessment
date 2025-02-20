@@ -100,8 +100,16 @@ class Nodelink extends Model
             $nodelink->alamat_node = $provinsi . ', ' . $kabupaten;
             $nodelink->save();
 
+            $riwayatStatusOrder = new OrderStatusHistory();
+            $riwayatStatusOrder->order_id = $order_id;
+            $riwayatStatusOrder->status_id = 9;
+            $riwayatStatusOrder->keterangan = 'Alamat node telah ditambahkan';
+            $riwayatStatusOrder->tanggal = now();
+            $riwayatStatusOrder->save();
+
             $order = Order::find($order_id);
             $order->alamat_node = $nodelink->alamat_node;
+            $order->riwayat_status_order_id = $riwayatStatusOrder->id;
             $order->save();
 
             DB::commit();

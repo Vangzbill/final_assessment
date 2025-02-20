@@ -363,6 +363,7 @@ class Order extends Model
                 'Pembayaran',
                 'Pengiriman',
                 'Pesanan Diterima',
+                'Alamat Layanan',
                 'Aktivasi Layanan',
                 'Surat Pernyataan Aktivasi',
                 'Pesanan Selesai'

@@ -50,7 +50,7 @@ class BillingController extends Controller
                 'total_ppn' => $ppn,
                 'total_akhir' => $nodelink->total_biaya + $ppn,
                 'jatuh_tempo' => $billingDueDate,
-                'status' => 'PENDING'
+                'status' => 'Unpaid'
             ]);
         }
     }
@@ -132,6 +132,64 @@ class BillingController extends Controller
             return $this->generateResponse('error', 'Token is invalid', null, 401);
         } catch (\Exception $e) {
             return $this->generateResponse('error', $e->getMessage(), null, 500);
+        }
+    }
+
+    public function nearby(){
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+
+            $billing = BillingRevenue::select([
+                'tbl_billing_revenue.id as billing_id',
+                'tbl_billing_revenue.order_id',
+                'tbl_order.sid as order_sid',
+                'tbl_order.unique_order as order_unique',
+                'tbl_order.nama_node',
+                'tbl_order.alamat_node',
+                'tbl_billing_revenue.total_akhir as nominal',
+                'tbl_billing_revenue.jatuh_tempo',
+                'tbl_billing_revenue.status',
+                'tbl_billing_revenue.bukti_ppn as bukti_ppn'
+            ])
+                ->join('tbl_order', 'tbl_billing_revenue.order_id', '=', 'tbl_order.id')
+                ->where('tbl_order.customer_id', $user->id)
+                ->where('tbl_billing_revenue.status', 'Unpaid')
+                ->orderBy('tbl_billing_revenue.jatuh_tempo', 'asc')
+                ->limit(3)
+                ->get();
+
+            $data = [];
+            foreach ($billing as $bill) {
+                $nodelink = Nodelink::whereHas('kontrak_nodelink.kontrak_layanan.kontrak', function ($query) use ($bill) {
+                    $query->where('order_id', $bill->order_id);
+                })
+                    ->first();
+
+                $imagePath = public_path('assets/images/' . $bill->bukti_ppn);
+                $bukti_ppn = file_exists($imagePath) && $bill->bukti_ppn
+                    ? url('assets/images/' . $bill->bukti_ppn)
+                    : null;
+
+                $data[] = [
+                    'billing_id' => $bill->billing_id,
+                    'order_id' => $bill->order_id,
+                    'order_sid' => $bill->order_sid,
+                    'order_unique' => $bill->order_unique,
+                    'nama_node' => $nodelink->nama_node,
+                    'alamat_node' => $nodelink->alamat_node,
+                    'nominal' => $bill->nominal,
+                    'jatuh_tempo' => $bill->jatuh_tempo,
+                    'status' => $bill->status,
+                    'recurring' => 'Ya',
+                    'latitude' => $nodelink->latitude,
+                    'longitude' => $nodelink->longitude,
+                    'bukti_ppn' => $bukti_ppn
+                ];
+            }
+
+            return $this->generateResponse('success', 'Data billing berhasil diambil', $data);
+        }catch (\Exception $e) {
+            return $this->generateResponse('error', $e->getMessage());
         }
     }
 
