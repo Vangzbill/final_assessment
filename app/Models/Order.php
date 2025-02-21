@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class Order extends Model
 {
@@ -358,7 +359,7 @@ class Order extends Model
             });
 
         $requiredStatuses = $isCanceled
-            ? ['Pembayaran' , 'Pesanan Dibatalkan']
+            ? ['Pembayaran', 'Pesanan Dibatalkan']
             : [
                 'Pembayaran',
                 'Pengiriman',
@@ -404,6 +405,10 @@ class Order extends Model
                             );
                         }
                         $baseStatus['estimasi_pengambilan'] = $formatTanggal($order->order_date);
+                        break;
+
+                    case 'Alamat Layanan':
+                        $baseStatus['alamat_layanan'] = $order->alamat_node;
                         break;
 
                     case 'Aktivasi Layanan':
@@ -536,4 +541,38 @@ class Order extends Model
 
         return 'Pesanan telah diterima';
     }
+
+    public static function tracking($resi)
+    {
+        $url = "https://api-sandbox.collaborator.komerce.id/order/api/v1/orders/history-airway-bill";
+
+        $response = Http::withOptions(['verify' => false] )->withHeaders([
+            'x-api-key' => 'AMcdQEZOa1612cc65ffcad53wIyCXDap',
+        ])->get($url, [
+            'shipping' => 'JNE',
+            'airway_bill' => $resi,
+        ]);
+        dd($response->json());
+        return $response->json();
+    }
+
+    // public static function tracking($resi)
+    // {
+    //     $url_jne = 'http://apiv2.jne.co.id:10102/tracing/api/';
+    //     $username = 'TESTAPI';
+    //     $api_key = '25c898a9faea1a100859ecd9ef674548';
+
+    //     $response = Http::asForm()->post($url_jne . 'list/v1/cnote/' . $resi, [
+    //         'username' => $username,
+    //         'api_key' => $api_key,
+    //     ]);
+
+    //     if ($response->successful()) {
+    //         $tracking = response()->json($response->json());
+    //         return $tracking;
+    //     } else {
+    //         // dd($response->json());
+    //         return response()->json($response->json(), 400);
+    //     }
+    // }
 }

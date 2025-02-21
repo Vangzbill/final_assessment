@@ -184,7 +184,7 @@ class PaymentController extends Controller
             $billing_revenue->kontrak_nodelink_id = $kontrak_nodelink->id;
             $billing_revenue->order_id = $order->id;
             $billing_revenue->tanggal_tagih = now();
-            $billing_revenue->total_ppn = ($order->perangkat->harga_perangkat * 0.11) + ($order->layanan->harga_layanan * 0.11);
+            $billing_revenue->total_ppn = ($order->produk->harga_perangkat * 0.11) + ($order->layanan->harga_layanan * 0.11);
             $billing_revenue->total_tagihan = $order->total_harga;
             $billing_revenue->total_akhir = $order->total_harga + 16000;
             $billing_revenue->jatuh_tempo = now()->addDays(10);

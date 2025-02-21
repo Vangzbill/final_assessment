@@ -260,4 +260,18 @@ class OrderController extends Controller
             return $this->generateResponse('error', $e->getMessage(), null, 500);
         }
     }
+
+    public function tracking($resi){
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $order = Order::tracking($resi);
+            if (!$order) {
+                return $this->generateResponse('error', 'Data not found', null, 404);
+            }
+
+            return $this->generateResponse('success', 'Data retrieved successfully', $order);
+        } catch (\Exception $e) {
+            return $this->generateResponse('error', $e->getMessage(), null, 500);
+        }
+    }
 }
