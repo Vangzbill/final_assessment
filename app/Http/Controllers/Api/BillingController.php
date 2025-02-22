@@ -58,7 +58,7 @@ class BillingController extends Controller
     public function billingSummary(Request $request)
     {
         try {
-            if (!$token = JWTAuth::getToken()) {
+            if (!JWTAuth::getToken()) {
                 return $this->generateResponse('error', 'Token not provided', null, 401);
             }
 
@@ -81,7 +81,7 @@ class BillingController extends Controller
                 ->orderBy('tbl_billing_revenue.jatuh_tempo', 'desc');
 
             if ($request->filled('nama_node')) {
-                $query->where('tbl_order.nama_node', 'LIKE', '%' . $request->nama_node . '%');
+                $query->where('tbl_order.nama_node', 'LIKE', "%{$request->nama_node}%");
             }
 
             if ($request->filled('pembayaran')) {
@@ -91,10 +91,23 @@ class BillingController extends Controller
                 }
             }
 
-            if ($request->filled('pelunasan') && $request->pelunasan === 'paid') {
-                $query->whereNotNull('tbl_billing_revenue.bukti_ppn');
-            } elseif ($request->filled('pelunasan') && $request->pelunasan === 'unpaid') {
-                $query->whereNull('tbl_billing_revenue.bukti_ppn');
+            if ($request->filled('pelunasan')) {
+                if ($request->pelunasan === 'paid') {
+                    $query->whereNotNull('tbl_billing_revenue.bukti_ppn');
+                } elseif ($request->pelunasan === 'unpaid') {
+                    $query->whereNull('tbl_billing_revenue.bukti_ppn');
+                }
+            }
+
+            if ($request->filled('simply')) {
+                [$month, $year] = explode('-', $request->simply);
+                $month = (int) $month;
+                $year = (int) $year;
+
+                $query->whereBetween('tbl_billing_revenue.jatuh_tempo', [
+                    "$year-$month-01",
+                    "$year-$month-31"
+                ]);
             }
 
             if ($request->filled('search')) {
@@ -102,11 +115,10 @@ class BillingController extends Controller
 
                 $query->where(function ($q) use ($search) {
                     $numericSearch = preg_replace('/[^\d]/', '', $search);
-
                     $alphanumericSearch = preg_replace('/[^a-zA-Z0-9\-]/', '', $search);
 
                     $q->whereRaw('LOWER(tbl_order.unique_order) LIKE ?', ['%' . strtolower($alphanumericSearch) . '%'])
-                        ->orWhere('tbl_billing_revenue.total_akhir', 'like', '%' . $numericSearch . '%');
+                        ->orWhere('tbl_billing_revenue.total_akhir', 'like', "%{$numericSearch}%");
                 });
             }
 
@@ -135,7 +147,8 @@ class BillingController extends Controller
         }
     }
 
-    public function nearby(){
+    public function nearby()
+    {
         try {
             $user = JWTAuth::parseToken()->authenticate();
 
@@ -155,8 +168,7 @@ class BillingController extends Controller
                 ->where('tbl_order.customer_id', $user->id)
                 ->where('tbl_billing_revenue.status', 'Unpaid')
                 ->orderBy('tbl_billing_revenue.jatuh_tempo', 'asc')
-                ->limit(3)
-                ->get();
+                ->limit(1)->get();
 
             $data = [];
             foreach ($billing as $bill) {
@@ -188,7 +200,7 @@ class BillingController extends Controller
             }
 
             return $this->generateResponse('success', 'Data billing berhasil diambil', $data);
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return $this->generateResponse('error', $e->getMessage());
         }
     }
@@ -285,6 +297,36 @@ class BillingController extends Controller
             return $this->generateResponse('success', 'Bukti PPN berhasil diupload');
         } catch (\Exception $e) {
             DB::rollBack();
+            return $this->generateResponse('error', $e->getMessage());
+        }
+    }
+
+    public function monthBilling()
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            if (!$user) {
+                return $this->generateResponse('error', 'User tidak ditemukan');
+            }
+
+            $billings = BillingRevenue::select([
+                'tbl_billing_revenue.id as billing_id',
+                'tbl_billing_revenue.order_id',
+                'tbl_billing_revenue.jatuh_tempo',
+            ])
+                ->join('tbl_order', 'tbl_billing_revenue.order_id', '=', 'tbl_order.id')
+                ->where('tbl_order.customer_id', $user->id)
+                ->get();
+
+            $periode = collect($billings)->map(function ($billing) {
+                return [
+                    'periode' => Carbon::parse($billing->jatuh_tempo)->format('F Y'),
+                    'simply' => Carbon::parse($billing->jatuh_tempo)->format('m-Y')
+                ];
+            })->unique()->values()->toArray();
+
+            return $this->generateResponse('success', 'Data periode billing berhasil diambil', $periode);
+        } catch (\Exception $e) {
             return $this->generateResponse('error', $e->getMessage());
         }
     }

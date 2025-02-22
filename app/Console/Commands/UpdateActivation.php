@@ -29,16 +29,16 @@ class UpdateActivation extends Command
     {
         $order_delivery = Order::where('payment_status', 2)
         ->whereHas('order_status_history', function ($query) {
-            $query->where('status_id', 5);
+            $query->where('status_id', 9);
         })
         ->whereDoesntHave('order_status_history', function ($query) {
-            $query->where('status_id', 6);
+            $query->where('status_id', 5);
         })->get();
 
         foreach ($order_delivery as $order) {
             $orderStatusHistory = new OrderStatusHistory();
             $orderStatusHistory->order_id = $order->id;
-            $orderStatusHistory->status_id = 6;
+            $orderStatusHistory->status_id = 5;
             $orderStatusHistory->keterangan = 'Pesanan telah diaktifkan';
             $orderStatusHistory->tanggal = now();
             $orderStatusHistory->save();

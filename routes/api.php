@@ -92,6 +92,7 @@ Route::middleware('add.ngrok.header')->group(function(){
         Route::post('upload-ppn', [BillingController::class, 'upload']);
         Route::get('nearby', [BillingController::class, 'nearby']);
         Route::get('nodelink', [NodelinkController::class, 'index']);
+        Route::get('month-billing', [BillingController::class, 'monthBilling']);
     });
 
     Route::get('test', [BillingController::class, 'test']);
