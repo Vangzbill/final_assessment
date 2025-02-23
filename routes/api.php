@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\BillingController;
 use App\Http\Controllers\Api\DepositController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\NodelinkController;
+use App\Http\Controllers\Api\NpsController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProductController;
@@ -93,6 +94,10 @@ Route::middleware('add.ngrok.header')->group(function(){
         Route::get('nearby', [BillingController::class, 'nearby']);
         Route::get('nodelink', [NodelinkController::class, 'index']);
         Route::get('month-billing', [BillingController::class, 'monthBilling']);
+    });
+
+    Route::middleware('jwt.verify')->prefix('nps')->group(function () {
+        Route::post('create'. [NpsController::class, 'createNps']);
     });
 
     Route::get('test', [BillingController::class, 'test']);

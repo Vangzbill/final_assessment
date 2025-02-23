@@ -51,4 +51,13 @@ class Customer extends Authenticatable implements JWTSubject
     ];
 
     public $timestamps = false;
+
+    public function nps()
+    {
+        return $this->hasMany(Nps::class, 'customer_id', 'id');
+    }
+
+    public function order(){
+        return $this->hasMany(Order::class, 'customer_id', 'id');
+    }
 }

@@ -23,37 +23,37 @@ class BillingController extends Controller
         ], $statusCode);
     }
 
-    public static function generateBillingRevenue()
-    {
-        $oneMonthOldNodelinks = KontrakNodelink::query()
-            ->whereRaw('DATE(created_date) = ?', [Carbon::now()->subMonth()->format('Y-m-d')])
-            ->whereNotExists(function ($query) {
-                $query->select(DB::raw(1))
-                    ->from('tbl_billing_revenue')
-                    ->whereRaw('tbl_billing_revenue.kontrak_nodelink_id = tbl_kontrak_nodelink.id');
-            })
-            ->with(['kontrak_layanan.kontrak.order'])
-            ->get();
+    // public static function generateBillingRevenue()
+    // {
+    //     $oneMonthOldNodelinks = KontrakNodelink::query()
+    //         ->whereRaw('DATE(created_date) = ?', [Carbon::now()->subMonth()->format('Y-m-d')])
+    //         ->whereNotExists(function ($query) {
+    //             $query->select(DB::raw(1))
+    //                 ->from('tbl_billing_revenue')
+    //                 ->whereRaw('tbl_billing_revenue.kontrak_nodelink_id = tbl_kontrak_nodelink.id');
+    //         })
+    //         ->with(['kontrak_layanan.kontrak.order'])
+    //         ->get();
 
-        $lastMonth = Carbon::now()->subMonth();
-        $billingStartDate = Carbon::parse($lastMonth)->startOfMonth();
-        $billingDueDate = Carbon::parse($lastMonth)->endOfMonth();
+    //     $lastMonth = Carbon::now()->subMonth();
+    //     $billingStartDate = Carbon::parse($lastMonth)->startOfMonth();
+    //     $billingDueDate = Carbon::parse($lastMonth)->endOfMonth();
 
-        foreach ($oneMonthOldNodelinks as $nodelink) {
-            $ppn = ceil($nodelink->total_biaya * 0.11);
+    //     foreach ($oneMonthOldNodelinks as $nodelink) {
+    //         $ppn = ceil($nodelink->total_biaya * 0.11);
 
-            BillingRevenue::create([
-                'kontrak_nodelink_id' => $nodelink->id,
-                'order_id' => $nodelink->kontrak_layanan->kontrak->order->id,
-                'tanggal_tagih' => $billingStartDate,
-                'total_tagihan' => $nodelink->total_biaya,
-                'total_ppn' => $ppn,
-                'total_akhir' => $nodelink->total_biaya + $ppn,
-                'jatuh_tempo' => $billingDueDate,
-                'status' => 'Unpaid'
-            ]);
-        }
-    }
+    //         BillingRevenue::create([
+    //             'kontrak_nodelink_id' => $nodelink->id,
+    //             'order_id' => $nodelink->kontrak_layanan->kontrak->order->id,
+    //             'tanggal_tagih' => $billingStartDate,
+    //             'total_tagihan' => $nodelink->total_biaya,
+    //             'total_ppn' => $ppn,
+    //             'total_akhir' => $nodelink->total_biaya + $ppn,
+    //             'jatuh_tempo' => $billingDueDate,
+    //             'status' => 'Unpaid'
+    //         ]);
+    //     }
+    // }
 
     public function billingSummary(Request $request)
     {

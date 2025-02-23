@@ -52,8 +52,8 @@ class DepositController extends Controller
                 })->sum('jumlah');
 
             $data = [
-                'total_deposit_aktif' => $total_deposit_aktif ?? 0,
-                'total_deposit_terpakai' => $total_deposit_terpakai ?? 0,
+                'total_deposit_aktif' => (int) $total_deposit_aktif ?? 0,
+                'total_deposit_terpakai' => (int) $total_deposit_terpakai ?? 0,
             ];
 
             return $this->generateResponse('success', 'Summary Deposit', $data);
