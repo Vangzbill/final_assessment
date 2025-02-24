@@ -544,35 +544,23 @@ class Order extends Model
 
     public static function tracking($resi)
     {
-        $url = "https://api-sandbox.collaborator.komerce.id/order/api/v1/orders/history-airway-bill";
+        $url_jne = env('URL_JNE');
+        $username = env('USERNAME_JNE');
+        $api_key = env('API_KEY_JNE');
 
-        $response = Http::withOptions(['verify' => false] )->withHeaders([
-            'x-api-key' => 'AMcdQEZOa1612cc65ffcad53wIyCXDap',
-        ])->get($url, [
-            'shipping' => 'JNE',
-            'airway_bill' => $resi,
+        $response = Http::asForm()->post($url_jne . 'list/v1/cnote/' . $resi, [
+            'username' => $username,
+            'api_key' => $api_key,
         ]);
-        dd($response->json());
-        return $response->json();
+
+        if ($response->successful()) {
+            $tracking = response()->json($response->json());
+            $detail = $tracking->getData()->history;
+
+            return $detail;
+        } else {
+            // dd($response->json());
+            return response()->json($response->json(), 400);
+        }
     }
-
-    // public static function tracking($resi)
-    // {
-    //     $url_jne = 'http://apiv2.jne.co.id:10102/tracing/api/';
-    //     $username = 'TESTAPI';
-    //     $api_key = '25c898a9faea1a100859ecd9ef674548';
-
-    //     $response = Http::asForm()->post($url_jne . 'list/v1/cnote/' . $resi, [
-    //         'username' => $username,
-    //         'api_key' => $api_key,
-    //     ]);
-
-    //     if ($response->successful()) {
-    //         $tracking = response()->json($response->json());
-    //         return $tracking;
-    //     } else {
-    //         // dd($response->json());
-    //         return response()->json($response->json(), 400);
-    //     }
-    // }
 }
