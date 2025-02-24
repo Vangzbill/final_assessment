@@ -4,17 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Nps extends Model
+class Popup extends Model
 {
-    protected $table = 'tbl_nps';
+    protected $table = 'tbl_popup';
 
     protected $fillable = [
         'customer_id',
-        'nama_customer',
-        'rating',
-        'feedback',
-        'created_date',
-        'jenis'
+        'created_at'
     ];
 
     public $timestamps = false;

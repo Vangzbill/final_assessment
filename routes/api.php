@@ -96,8 +96,9 @@ Route::middleware('add.ngrok.header')->group(function(){
         Route::get('month-billing', [BillingController::class, 'monthBilling']);
     });
 
-    Route::middleware('jwt.verify')->prefix('nps')->group(function () {
-        Route::post('create'. [NpsController::class, 'createNps']);
+    Route::middleware('jwt.verify')->prefix('nps')->group(callback: function () {
+        Route::post('create', [NpsController::class, 'createNps']);
+        Route::post('popup', [NpsController::class, 'popup']);
     });
 
     Route::get('test', [BillingController::class, 'test']);

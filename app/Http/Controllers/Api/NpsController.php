@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Nps;
+use App\Models\Popup;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -32,10 +33,35 @@ class NpsController extends Controller
             $nps->rating = $request->rating;
             $nps->feedback = $request->feedback;
             $nps->created_date = Carbon::now();
+            $nps->jenis = $request->jenis;
             $nps->save();
             DB::commit();
 
             return $this->generateResponse('success', 'NPS created', $nps, 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->generateResponse('error', $e->getMessage(), null, 500);
+        }
+    }
+
+    public function popup(){
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $existingPopupToday = Popup::where('customer_id', $user->id)
+                ->whereDate('created_at', Carbon::today())
+                ->first();
+
+            if(!$existingPopupToday){
+                DB::beginTransaction();
+                $popup = new Popup();
+                $popup->customer_id = $user->id;
+                $popup->created_at = Carbon::now();
+                $popup->save();
+                DB::commit();
+                return $this->generateResponse('success', 'Popup created', $popup, 200);
+            } else {
+                return $this->generateResponse('error', 'Popup already created today', null, 400);
+            }
         } catch (\Exception $e) {
             DB::rollBack();
             return $this->generateResponse('error', $e->getMessage(), null, 500);

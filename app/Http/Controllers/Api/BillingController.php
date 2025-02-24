@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BillingRevenue;
 use App\Models\KontrakNodelink;
 use App\Models\Nodelink;
+use App\Models\Popup;
 use App\Models\ProformaInvoice;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -244,6 +245,10 @@ class BillingController extends Controller
                 ? url('assets/images/' . $billing->bukti_ppn)
                 : null;
 
+            $popup = Popup::where('customer_id', $user->id)
+                ->whereDate('created_at', Carbon::today())
+                ->first();
+
             $data = [
                 'billing_id' => $billing->billing_id,
                 'order_id' => $billing->order_id,
@@ -259,7 +264,8 @@ class BillingController extends Controller
                 'longitude' => $nodelink->longitude,
                 'no_invoice' => $invoice->no_proforma_invoice,
                 'tanggal_invoice' => $invoice->tanggal_proforma,
-                'bukti_ppn' => $bukti_ppn
+                'bukti_ppn' => $bukti_ppn,
+                'popup' => $popup ? 1 : 0
             ];
 
             return $this->generateResponse('success', 'Data billing berhasil diambil', $data);
