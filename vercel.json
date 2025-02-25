@@ -23,7 +23,7 @@
         }
     ],
     "public": true,
-    "buildCommand": "vite build && php artisan config:cache",
+    "buildCommand": "vite build",
     "env": {
         "APP_ENV": "production",
         "APP_TIMEZONE": "Asia/Jakarta",
