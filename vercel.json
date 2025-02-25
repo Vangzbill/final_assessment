@@ -16,7 +16,7 @@
         { "src": "/(.*)", "dest": "/api/index.php" }
     ],
     "rewrites": [
-        { "source": "/api/(.*)", "dest": "/public/index.php" }
+        { "source": "/api/(.*)", "destination": "/public/index.php" }
     ],
     "public": true,
     "buildCommand": "vite build",
