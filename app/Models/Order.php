@@ -32,7 +32,14 @@ class Order extends Model
         'sn_kit',
         'sid',
         'is_ttd',
-        'nama_node'
+        'nama_node',
+        'alamat_node',
+        'jenis_pengiriman',
+        'nomor_resi',
+        'provinsi',
+        'kabupaten',
+        'kecamatan',
+        'kelurahan',
     ];
 
     public $timestamps = false;
@@ -114,6 +121,12 @@ class Order extends Model
                 'order_date' => Carbon::now(),
                 'unique_order' => 'ORD' . $userId . '-' . Carbon::now()->format('YmdHis'),
                 'sn_kit' => 'KITSN' . $userId . '-' . (Order::max('id') + 1) . '-' . Carbon::now()->format('YmdHis'),
+                'jenis_pengiriman' => $request['jenis_pengiriman'],
+                'provinsi' => $request['provinsi'] ? $request['provinsi'] : null,
+                'kabupaten' => $request['kabupaten'] ? $request['kabupaten'] : null,
+                'kecamatan' => $request['kecamatan'] ? $request['kecamatan'] : null,
+                'kelurahan' => $request['kelurahan'] ? $request['kelurahan'] : null,
+                'nomor_resi' => $request['jenis_pengiriman'] == 'JNE' ? 'CM69624677932' : null,
             ]);
 
             $riwayat_order = OrderStatusHistory::create([
@@ -281,6 +294,12 @@ class Order extends Model
                 'ppn' => $order->proforma_invoice_item->sum('nilai_ppn'),
                 'deposit_layanan' => optional($order->layanan)->harga_layanan,
                 'total_keseluruhan' => $total_keseluruhan,
+                'jenis_pengiriman' => $order->jenis_pengiriman,
+                'nomor_resi' => $order->nomor_resi,
+                'provinsi' => $order->provinsi,
+                'kabupaten' => $order->kabupaten,
+                'kecamatan' => $order->kecamatan,
+                'kelurahan' => $order->kelurahan
             ];
         }
 
@@ -395,14 +414,15 @@ class Order extends Model
                 switch ($statusName) {
                     case 'Pembayaran':
                         $baseStatus['harga'] = $order->total_harga;
-                        $baseStatus['estimasi_pengambilan'] = $existingStatus ? $formatTanggal($existingStatus->tanggal) : null;
                         break;
 
                     case 'Pengiriman':
                         if ($existingStatus) {
+                            $order->jenis_pengiriman === 'JNE' ? $baseStatus['tracking'] = 1 : $baseStatus['tracking'] = 0;
                             $baseStatus['estimasi'] = $formatTanggal(
                                 $order->order_date
                             );
+                            $baseStatus['nomor_resi'] = $order->nomor_resi;
                         }
                         $baseStatus['estimasi_pengambilan'] = $formatTanggal($order->order_date);
                         break;
@@ -435,6 +455,10 @@ class Order extends Model
 
                     case 'Surat Pernyataan Aktivasi':
                         $baseStatus['is_ttd'] = $order->is_ttd;
+                        break;
+
+                    case 'Pesanan Selesai':
+                        $baseStatus['popup'] = $existingStatus ? 1 : 0;
                         break;
                 }
 

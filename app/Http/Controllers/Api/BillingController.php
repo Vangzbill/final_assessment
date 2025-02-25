@@ -100,7 +100,7 @@ class BillingController extends Controller
                 }
             }
 
-            if ($request->filled('simply')) {
+            if ($request->filled('simply') && $request->simply !== 'all') {
                 [$month, $year] = explode('-', $request->simply);
                 $month = (int) $month;
                 $year = (int) $year;
@@ -325,11 +325,34 @@ class BillingController extends Controller
                 ->get();
 
             $periode = collect($billings)->map(function ($billing) {
+                $bulanIndonesia = [
+                    'January' => 'Januari',
+                    'February' => 'Februari',
+                    'March' => 'Maret',
+                    'April' => 'April',
+                    'May' => 'Mei',
+                    'June' => 'Juni',
+                    'July' => 'Juli',
+                    'August' => 'Agustus',
+                    'September' => 'September',
+                    'October' => 'Oktober',
+                    'November' => 'November',
+                    'December' => 'Desember',
+                ];
+
+                $bulan = Carbon::parse($billing->jatuh_tempo)->format('F');
+                $tahun = Carbon::parse($billing->jatuh_tempo)->format('Y');
+
                 return [
-                    'periode' => Carbon::parse($billing->jatuh_tempo)->format('F Y'),
+                    'periode' => $bulanIndonesia[$bulan] . ' ' . $tahun,
                     'simply' => Carbon::parse($billing->jatuh_tempo)->format('m-Y')
                 ];
             })->unique()->values()->toArray();
+
+            array_unshift($periode, [
+                'periode' => 'All',
+                'simply' => 'all'
+            ]);
 
             return $this->generateResponse('success', 'Data periode billing berhasil diambil', $periode);
         } catch (\Exception $e) {
