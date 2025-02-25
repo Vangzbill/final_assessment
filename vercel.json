@@ -15,6 +15,9 @@
         },
         { "src": "/(.*)", "dest": "/api/index.php" }
     ],
+    "rewrites": [
+        { "source": "/api/(.*)", "dest": "/public/index.php" }
+    ],
     "public": true,
     "buildCommand": "vite build",
     "outputDirectory": "public",
