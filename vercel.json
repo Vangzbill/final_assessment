@@ -6,6 +6,10 @@
     },
     "routes": [
         {
+            "src": "/api/(.*)",
+            "dest": "/public/index.php"
+        },
+        {
             "src": "/build/(.*)",
             "dest": "/public/build/$1"
         },
@@ -14,16 +18,12 @@
             "dest": "/public/$1"
         },
         {
-            "src": "/api/(.*)",
-            "dest": "/public/index.php"
-        },
-        {
             "src": "/(.*)",
-            "dest": "/api/index.php"
+            "dest": "/public/index.php"
         }
     ],
     "public": true,
-    "buildCommand": "vite build",
+    "buildCommand": "vite build && php artisan config:cache",
     "env": {
         "APP_ENV": "production",
         "APP_TIMEZONE": "Asia/Jakarta",
