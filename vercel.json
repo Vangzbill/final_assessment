@@ -13,14 +13,17 @@
             "src": "/(.*\\.(?:css|js|png|jpg|jpeg|gif|svg|ico|ttf|woff|woff2|eot|otf|webp|avif|txt))$",
             "dest": "/public/$1"
         },
-        { "src": "/(.*)", "dest": "/api/index.php" }
-    ],
-    "rewrites": [
-        { "source": "/api/(.*)", "dest": "/public/index.php" }
+        {
+            "src": "/api/(.*)",
+            "dest": "/public/index.php"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/api/index.php"
+        }
     ],
     "public": true,
-    "buildCommand": "vite build",
-    "outputDirectory": "public",
+    "buildCommand": "vercel build",
     "env": {
         "APP_ENV": "production",
         "APP_TIMEZONE": "Asia/Jakarta",
