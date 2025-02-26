@@ -48,14 +48,14 @@ class NpsController extends Controller
         try {
             $user = JWTAuth::parseToken()->authenticate();
             $existingPopupToday = Popup::where('customer_id', $user->id)
-                ->whereDate('created_at', Carbon::today())
+                ->whereDate('created_at', Carbon::today()->toDateString())
                 ->first();
 
             if(!$existingPopupToday){
                 DB::beginTransaction();
                 $popup = new Popup();
                 $popup->customer_id = $user->id;
-                $popup->created_at = Carbon::now();
+                $popup->created_at = Carbon::today()->toDateString();
                 $popup->save();
                 DB::commit();
                 return $this->generateResponse('success', 'Popup created', $popup, 200);
