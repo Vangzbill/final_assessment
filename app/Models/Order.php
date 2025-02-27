@@ -38,8 +38,7 @@ class Order extends Model
         'nomor_resi',
         'provinsi',
         'kabupaten',
-        'kecamatan',
-        'kelurahan',
+        'alamat_lengkap',
     ];
 
     public $timestamps = false;
@@ -124,8 +123,7 @@ class Order extends Model
                 'jenis_pengiriman' => $request['jenis_pengiriman'],
                 'provinsi' => $request['provinsi'] ? $request['provinsi'] : null,
                 'kabupaten' => $request['kabupaten'] ? $request['kabupaten'] : null,
-                'kecamatan' => $request['kecamatan'] ? $request['kecamatan'] : null,
-                'kelurahan' => $request['kelurahan'] ? $request['kelurahan'] : null,
+                'alamat_lengkap' => $request['alamat_lengkap'] ? $request['alamat_lengkap'] : null,
                 'nomor_resi' => $request['jenis_pengiriman'] == 'JNE' ? 'CM69624677932' : null,
             ]);
 
