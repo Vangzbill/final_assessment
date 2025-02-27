@@ -25,6 +25,6 @@ class KontrakLayanan extends Model
 
     public function kontrak_nodelink()
     {
-        return $this->hasMany(KontrakNodeLink::class, 'kontrak_layanan_id', 'id');
+        return $this->hasMany(KontrakNodelink::class, 'kontrak_layanan_id', 'id');
     }
 }
