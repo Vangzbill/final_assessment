@@ -354,17 +354,19 @@ class Order extends Model
     {
         $order = Order::with([
             'layanan',
-            'produk',
+            'produk.category',
             'cp_customer',
-            'order_status_history',
             'order_status_history.status',
-            'proforma_invoice_item',
             'proforma_invoice_item.produk',
             'proforma_invoice_item.layanan',
             'kontrak.kontrak_layanan.kontrak_nodelink.nodelink'
         ])->where('id', $orderId)
             ->where('customer_id', $userId)
             ->first();
+
+        if (!$order) {
+            return null;
+        }
 
         $formatTanggal = function ($tanggal) {
             return $tanggal ? Carbon::parse($tanggal)->translatedFormat('d F Y') : null;
@@ -391,9 +393,7 @@ class Order extends Model
             ->filter(function ($item) {
                 return $item->status->nama_status_order !== 'Order Diterima ';
             })
-            ->mapWithKeys(function ($item) {
-                return [$item->status->nama_status_order => $item];
-            });
+            ->keyBy('status.nama_status_order');
 
         $riwayatStatus = collect($requiredStatuses)
             ->map(function ($statusName) use ($existingStatuses, $formatTanggal, $order, $isCanceled) {
@@ -416,12 +416,10 @@ class Order extends Model
 
                     case 'Pengiriman':
                         if ($existingStatus) {
-                            $order->jenis_pengiriman === 'JNE' ? $baseStatus['tracking'] = 1 : $baseStatus['tracking'] = 0;
-                            $baseStatus['estimasi'] = $formatTanggal(
-                                $order->order_date
-                            );
+                            $baseStatus['estimasi'] = $formatTanggal($order->order_date);
                             $baseStatus['nomor_resi'] = $order->nomor_resi;
                         }
+                        $baseStatus['tracking'] = $order->jenis_pengiriman === 'JNE' ? 1 : 0;
                         $baseStatus['estimasi_pengambilan'] = $formatTanggal($order->order_date);
                         break;
 
@@ -431,20 +429,7 @@ class Order extends Model
 
                     case 'Aktivasi Layanan':
                         if ($existingStatus) {
-                            $nodelink = null;
-                            if ($order->kontrak) {
-                                $kontrak = $order->kontrak->first();
-                                if ($kontrak && $kontrak->kontrak_layanan->isNotEmpty()) {
-                                    $kontrakLayanan = $kontrak->kontrak_layanan->first();
-                                    if ($kontrakLayanan && $kontrakLayanan->kontrak_nodelink->isNotEmpty()) {
-                                        $kontrakNodelink = $kontrakLayanan->kontrak_nodelink->first();
-                                        if ($kontrakNodelink) {
-                                            $nodelink = $kontrakNodelink->nodelink;
-                                        }
-                                    }
-                                }
-                            }
-
+                            $nodelink = optional(optional(optional($order->kontrak->first())->kontrak_layanan->first())->kontrak_nodelink->first())->nodelink;
                             $baseStatus['sn_kit'] = $order->sn_kit;
                             $baseStatus['latitude'] = optional($nodelink)->latitude;
                             $baseStatus['longitude'] = optional($nodelink)->longitude;
@@ -456,9 +441,7 @@ class Order extends Model
                         break;
 
                     case 'Pesanan Selesai':
-                        if($existingStatus){
-                            $baseStatus['popup'] = $existingStatus ? 1 : 0;
-                        }
+                        $baseStatus['popup'] = $existingStatus ? 1 : 0;
                         break;
                 }
 
@@ -473,7 +456,7 @@ class Order extends Model
             'order_id' => $order->id,
             'unique_order' => $order->unique_order,
             'nama_perangkat' => optional($order->proforma_invoice_item->first()->produk)->nama_produk,
-            'nama_kategori' => optional(optional($order->produk)->category)->nama_kategori,
+            'nama_kategori' => optional($order->produk->category)->nama_kategori,
             'image' => $image,
             'order_date' => $formatTanggal($order->order_date),
             'riwayat_status_order' => $riwayatStatus,
