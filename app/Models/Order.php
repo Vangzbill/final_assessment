@@ -222,7 +222,10 @@ class Order extends Model
             });
         }
 
-        $orders = $query->orderBy('tbl_order.id', 'desc')->paginate(10, ['*'], 'page', $page);
+        $orders = $query->orderBy(
+            DB::raw('(SELECT MAX(tanggal) FROM tbl_riwayat_status_order AS osh WHERE osh.order_id = tbl_order.id)'),
+            'desc'
+        )->paginate(10, ['*'], 'page', $page);
 
         $orders->getCollection()->transform(function ($item) {
             $lastStatusHistory = optional($item->order_status_history->last());
