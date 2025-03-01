@@ -423,6 +423,10 @@ class Order extends Model
                         $baseStatus['estimasi_pengambilan'] = $formatTanggal($order->order_date);
                         break;
 
+                    case 'Pesanan Diterima':
+                        $baseStatus['tracking'] = $order->jenis_pengiriman === 'JNE' ? 1 : 0;
+                        break;
+
                     case 'Alamat Layanan':
                         $baseStatus['alamat_layanan'] = $order->alamat_node;
                         break;
