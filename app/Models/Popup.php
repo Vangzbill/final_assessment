@@ -10,7 +10,8 @@ class Popup extends Model
 
     protected $fillable = [
         'customer_id',
-        'created_at'
+        'created_at',
+        'id_order',
     ];
 
     public $timestamps = false;

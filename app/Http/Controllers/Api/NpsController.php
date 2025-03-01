@@ -44,17 +44,18 @@ class NpsController extends Controller
         }
     }
 
-    public function popup(){
+    public function popup(Request $request){
         try {
             $user = JWTAuth::parseToken()->authenticate();
             $existingPopupToday = Popup::where('customer_id', $user->id)
                 ->whereDate('created_at', Carbon::today()->toDateString())
                 ->first();
 
-            if(!$existingPopupToday){
+            if(!$existingPopupToday || $request->id_order != null){
                 DB::beginTransaction();
                 $popup = new Popup();
                 $popup->customer_id = $user->id;
+                $popup->id_order = $request->id_order;
                 $popup->created_at = Carbon::today()->toDateString();
                 $popup->save();
                 DB::commit();

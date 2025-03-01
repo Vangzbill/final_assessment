@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -28,8 +29,10 @@ class CancelOrder extends Command
      */
     public function handle()
     {
-        $orders = Order::where('payment_status', null)
-            ->orWhere('payment_status', 1)
+        $orders = Order::where(function ($query) {
+                $query->whereNull('payment_status')
+                      ->orWhere('payment_status', 1);
+            })
             ->whereRaw('DATEDIFF(NOW(), order_date) > 10')
             ->get();
 
@@ -37,15 +40,15 @@ class CancelOrder extends Command
 
         foreach ($orders as $order) {
             $existingHistory = OrderStatusHistory::where('order_id', $order->id)
-            ->where('status_id', 8)
-            ->first();
+                ->where('status_id', 8)
+                ->first();
 
             if (!$existingHistory) {
                 $orderHistory = new OrderStatusHistory();
                 $orderHistory->order_id = $order->id;
                 $orderHistory->status_id = 8;
                 $orderHistory->keterangan = 'Pesanan dibatalkan oleh sistem';
-                $orderHistory->tanggal = now();
+                $orderHistory->tanggal = Carbon::now();
                 $orderHistory->save();
 
                 $order->riwayat_status_order_id = $orderHistory->id;

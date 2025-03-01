@@ -399,7 +399,7 @@ class Order extends Model
             ->keyBy('status.nama_status_order');
 
         $riwayatStatus = collect($requiredStatuses)
-            ->map(function ($statusName) use ($existingStatuses, $formatTanggal, $order, $isCanceled) {
+            ->map(function ($statusName) use ($existingStatuses, $formatTanggal, $order, $isCanceled, $userId, $orderId) {
                 $existingStatus = $existingStatuses->get($statusName);
                 $baseStatus = [
                     'status' => $statusName,
@@ -411,6 +411,10 @@ class Order extends Model
                 if ($isCanceled && $statusName === 'Pembayaran') {
                     $baseStatus['is_done'] = 2;
                 }
+
+                $popup = Popup::where('customer_id', $userId)
+                ->where('id_order', $orderId)
+                ->first();
 
                 switch ($statusName) {
                     case 'Pembayaran':
@@ -448,7 +452,7 @@ class Order extends Model
                         break;
 
                     case 'Pesanan Selesai':
-                        $baseStatus['popup'] = $existingStatus ? 1 : 0;
+                        $baseStatus['popup'] = $popup ? 1 : 0;
                         break;
                 }
 
