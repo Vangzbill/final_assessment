@@ -452,7 +452,10 @@ class Order extends Model
                         break;
 
                     case 'Pesanan Selesai':
-                        $baseStatus['popup'] = $popup ? 1 : 0;
+                        $baseStatus['popup'] = 1;
+                        if($existingStatus){
+                            $baseStatus['popup'] = $popup ? 1 : 0;
+                        }
                         break;
                 }
 
