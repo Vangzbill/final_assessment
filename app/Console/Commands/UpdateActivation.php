@@ -36,6 +36,12 @@ class UpdateActivation extends Command
         })->get();
 
         foreach ($order_delivery as $order) {
+            $lastStatus = $order->order_status_history()
+            ->where('status_id', 9)
+            ->orderBy('tanggal', 'desc')
+            ->first();
+
+            if ($lastStatus && $lastStatus->tanggal->diffInHours(now()) > 24) {
             $orderStatusHistory = new OrderStatusHistory();
             $orderStatusHistory->order_id = $order->id;
             $orderStatusHistory->status_id = 5;
@@ -45,6 +51,7 @@ class UpdateActivation extends Command
 
             $order->riwayat_status_order_id = $orderStatusHistory->id;
             $order->save();
+            }
         }
     }
 }
