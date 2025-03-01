@@ -101,6 +101,10 @@ Route::middleware('add.ngrok.header')->group(function(){
         Route::post('popup', [NpsController::class, 'popup']);
     });
 
+    Route::middleware('jwt.verify')->prefix('nodelink')->group(function () {
+        Route::get('all', [NodelinkController::class, 'all']);
+    });
+
     Route::get('test', [BillingController::class, 'test']);
     Route::get('tes-template', function () {
         return view('document.billing-invoice');
