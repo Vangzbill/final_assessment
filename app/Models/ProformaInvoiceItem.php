@@ -33,7 +33,7 @@ class ProformaInvoiceItem extends Model
         return $this->belongsTo(Service::class, 'layanan_id', 'id');
     }
 
-    public function product()
+    public function produk()
     {
         return $this->belongsTo(Product::class, 'produk_id', 'id');
     }

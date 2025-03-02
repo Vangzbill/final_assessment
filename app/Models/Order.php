@@ -53,7 +53,7 @@ class Order extends Model
         return $this->belongsTo(Service::class, 'layanan_id', 'id');
     }
 
-    public function product()
+    public function produk()
     {
         return $this->belongsTo(Product::class, 'produk_id', 'id');
     }
@@ -358,8 +358,8 @@ class Order extends Model
         $order = Order::select('id', 'unique_order', 'total_harga', 'order_date', 'jenis_pengiriman', 'nomor_resi', 'alamat_node', 'sn_kit', 'is_ttd', 'customer_id')
             ->with([
                 'layanan:id,nama_layanan',
-                'product:id,nama_produk,kategori_produk_id',
-                'product.product_category:id,nama_kategori',
+                'produk:id,nama_produk,kategori_produk_id',
+                'produk.category:id,nama_kategori',
                 'order_status_history' => function ($query) {
                     $query->select('id', 'order_id', 'status_id', 'keterangan', 'tanggal')
                         ->with(['status:id,nama_status_order']);
@@ -367,9 +367,9 @@ class Order extends Model
                 'proforma_invoice_item' => function ($query) {
                     $query->select('id', 'order_id', 'produk_id', 'layanan_id')
                         ->with([
-                            'product:id,nama_produk,gambar_order,kategori_produk_id',
+                            'produk:id,nama_produk,gambar_order,kategori_produk_id',
                             'layanan:id,nama_layanan',
-                            'product.product_category:id,nama_kategori'
+                            'produk.category:id,nama_kategori',
                         ]);
                 }
             ])
@@ -381,14 +381,14 @@ class Order extends Model
             return null;
         }
 
-        $imageFileName = optional($order->proforma_invoice_item->first()->product)->gambar_order;
-        $image = $imageFileName ? asset("assets/images/{$imageFileName}") : null;
+        $imageFileName = optional($order->proforma_invoice_item->first()->produk)->gambar_order;
+        $image = $imageFileName ? asset('assets/images/' . $imageFileName) : null;
 
         return [
             'order_id' => $order->id,
             'unique_order' => $order->unique_order,
-            'nama_perangkat' => optional($order->proforma_invoice_item->first()->product)->nama_produk,
-            'nama_kategori' => optional($order->proforma_invoice_item->first()->product->product_category)->nama_kategori,
+            'nama_perangkat' => optional($order->proforma_invoice_item->first()->produk)->nama_produk,
+            'nama_kategori' => optional(optional($order->proforma_invoice_item->first())->produk->category)->nama_kategori,
             'image' => $image,
             'order_date' => self::formatTanggal($order->order_date),
             'riwayat_status_order' => self::getRiwayatStatus($order, $userId, $orderId),
@@ -485,7 +485,6 @@ class Order extends Model
             'layanan',
             'produk',
             'cp_customer',
-            'produk.category',
             'order_status_history',
             'order_status_history.status',
             'proforma_invoice_item',
