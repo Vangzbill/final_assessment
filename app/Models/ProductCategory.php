@@ -15,7 +15,7 @@ class ProductCategory extends Model
         return $this->hasMany(FaqProduct::class, 'kategori_produk_id');
     }
 
-    public function produk()
+    public function product()
     {
         return $this->hasMany(Product::class, 'kategori_produk_id', 'id');
     }

@@ -53,7 +53,7 @@ class Order extends Model
         return $this->belongsTo(Service::class, 'layanan_id', 'id');
     }
 
-    public function produk()
+    public function product()
     {
         return $this->belongsTo(Product::class, 'produk_id', 'id');
     }
@@ -358,8 +358,8 @@ class Order extends Model
         $order = Order::select('id', 'unique_order', 'total_harga', 'order_date', 'jenis_pengiriman', 'nomor_resi', 'alamat_node', 'sn_kit', 'is_ttd', 'customer_id')
             ->with([
                 'layanan:id,nama_layanan',
-                'produk:id,category_id',
-                'produk.category:id,nama_kategori',
+                'product:id,nama_produk,kategori_produk_id',
+                'product.product_category:id,nama_kategori',
                 'order_status_history' => function ($query) {
                     $query->select('id', 'order_id', 'status_id', 'keterangan', 'tanggal')
                         ->with(['status:id,nama_status_order']);
@@ -367,8 +367,9 @@ class Order extends Model
                 'proforma_invoice_item' => function ($query) {
                     $query->select('id', 'order_id', 'produk_id', 'layanan_id')
                         ->with([
-                            'produk:id,nama_produk,gambar_order',
-                            'layanan:id,nama_layanan'
+                            'product:id,nama_produk,gambar_order,kategori_produk_id',
+                            'layanan:id,nama_layanan',
+                            'product.product_category:id,nama_kategori'
                         ]);
                 }
             ])
@@ -380,14 +381,14 @@ class Order extends Model
             return null;
         }
 
-        $imageFileName = optional($order->proforma_invoice_item->first()->produk)->gambar_order;
-        $image = $imageFileName ? asset('assets/images/' . $imageFileName) : null;
+        $imageFileName = optional($order->proforma_invoice_item->first()->product)->gambar_order;
+        $image = $imageFileName ? asset("assets/images/{$imageFileName}") : null;
 
         return [
             'order_id' => $order->id,
             'unique_order' => $order->unique_order,
-            'nama_perangkat' => optional($order->proforma_invoice_item->first()->produk)->nama_produk,
-            'nama_kategori' => optional(optional($order->produk)->category)->nama_kategori,
+            'nama_perangkat' => optional($order->proforma_invoice_item->first()->product)->nama_produk,
+            'nama_kategori' => optional($order->proforma_invoice_item->first()->product->product_category)->nama_kategori,
             'image' => $image,
             'order_date' => self::formatTanggal($order->order_date),
             'riwayat_status_order' => self::getRiwayatStatus($order, $userId, $orderId),
@@ -395,82 +396,87 @@ class Order extends Model
     }
 
     private static function formatTanggal($tanggal)
-{
-    return $tanggal ? Carbon::parse($tanggal)->translatedFormat('d F Y') : null;
-}
+    {
+        return $tanggal ? Carbon::parse($tanggal)->translatedFormat('d F Y') : null;
+    }
 
-private static function getRiwayatStatus($order, $userId, $orderId)
-{
-    $formatTanggal = fn($tanggal) => $tanggal ? Carbon::parse($tanggal)->translatedFormat('d F Y') : null;
+    private static function getRiwayatStatus($order, $userId, $orderId)
+    {
+        $formatTanggal = fn($tanggal) => $tanggal ? Carbon::parse($tanggal)->translatedFormat('d F Y') : null;
 
-    $isCanceled = $order->order_status_history
-        ->contains(fn($item) => $item->status->nama_status_order === 'Pesanan Dibatalkan');
+        $isCanceled = $order->order_status_history
+            ->contains(fn($item) => $item->status->nama_status_order === 'Pesanan Dibatalkan');
 
-    $requiredStatuses = $isCanceled
-        ? ['Pembayaran', 'Pesanan Dibatalkan']
-        : [
-            'Pembayaran', 'Pengiriman', 'Pesanan Diterima', 'Alamat Layanan',
-            'Aktivasi Layanan', 'Surat Pernyataan Aktivasi', 'Pesanan Selesai'
-        ];
+        $requiredStatuses = $isCanceled
+            ? ['Pembayaran', 'Pesanan Dibatalkan']
+            : [
+                'Pembayaran',
+                'Pengiriman',
+                'Pesanan Diterima',
+                'Alamat Layanan',
+                'Aktivasi Layanan',
+                'Surat Pernyataan Aktivasi',
+                'Pesanan Selesai'
+            ];
 
-    $existingStatuses = $order->order_status_history
-        ->filter(fn($item) => $item->status->nama_status_order !== 'Order Diterima ')
-        ->keyBy('status.nama_status_order');
+        $existingStatuses = $order->order_status_history
+            ->filter(fn($item) => $item->status->nama_status_order !== 'Order Diterima ')
+            ->keyBy('status.nama_status_order');
 
-    $popup = Popup::where('customer_id', $userId)
-        ->where('id_order', $orderId)
-        ->exists();
+        $popup = Popup::where('customer_id', $userId)
+            ->where('id_order', $orderId)
+            ->exists();
 
-    return collect($requiredStatuses)->map(function ($statusName) use ($existingStatuses, $formatTanggal, $order, $isCanceled, $popup) {
-        $existingStatus = $existingStatuses->get($statusName);
-        $baseStatus = [
-            'status' => $statusName,
-            'keterangan' => $existingStatus ? $existingStatus->keterangan : '',
-            'tanggal' => $existingStatus ? $formatTanggal($existingStatus->tanggal) : null,
-            'is_done' => $existingStatus ? 1 : 0,
-        ];
+        return collect($requiredStatuses)->map(function ($statusName) use ($existingStatuses, $formatTanggal, $order, $isCanceled, $popup) {
+            $existingStatus = $existingStatuses->get($statusName);
+            $baseStatus = [
+                'status' => $statusName,
+                'keterangan' => $existingStatus ? $existingStatus->keterangan : '',
+                'tanggal' => $existingStatus ? $formatTanggal($existingStatus->tanggal) : null,
+                'is_done' => $existingStatus ? 1 : 0,
+            ];
 
-        if ($isCanceled && $statusName === 'Pembayaran') {
-            $baseStatus['is_done'] = 2;
-        }
+            if ($isCanceled && $statusName === 'Pembayaran') {
+                $baseStatus['is_done'] = 2;
+            }
 
-        switch ($statusName) {
-            case 'Pembayaran':
-                $baseStatus['harga'] = $order->total_harga;
-                break;
-            case 'Pengiriman':
-                if ($existingStatus) {
-                    $baseStatus['estimasi'] = $formatTanggal($order->order_date);
-                    $baseStatus['nomor_resi'] = $order->nomor_resi;
-                }
-                $baseStatus['tracking'] = $order->jenis_pengiriman === 'JNE' ? 1 : 0;
-                $baseStatus['estimasi_pengambilan'] = $formatTanggal($order->order_date);
-                break;
-            case 'Pesanan Diterima':
-                $baseStatus['tracking'] = $order->jenis_pengiriman === 'JNE' ? 1 : 0;
-                break;
-            case 'Alamat Layanan':
-                $baseStatus['alamat_layanan'] = $order->alamat_node;
-                break;
-            case 'Aktivasi Layanan':
-                if ($existingStatus) {
-                    $nodelink = optional(optional(optional($order->kontrak->first())->kontrak_layanan->first())->kontrak_nodelink->first())->nodelink;
-                    $baseStatus['sn_kit'] = $order->sn_kit;
-                    $baseStatus['latitude'] = optional($nodelink)->latitude;
-                    $baseStatus['longitude'] = optional($nodelink)->longitude;
-                }
-                break;
-            case 'Surat Pernyataan Aktivasi':
-                $baseStatus['is_ttd'] = $order->is_ttd;
-                break;
-            case 'Pesanan Selesai':
-                $baseStatus['popup'] = $popup ? 1 : 0;
-                break;
-        }
+            switch ($statusName) {
+                case 'Pembayaran':
+                    $baseStatus['harga'] = $order->total_harga;
+                    break;
+                case 'Pengiriman':
+                    if ($existingStatus) {
+                        $baseStatus['estimasi'] = $formatTanggal($order->order_date);
+                        $baseStatus['nomor_resi'] = $order->nomor_resi;
+                    }
+                    $baseStatus['tracking'] = $order->jenis_pengiriman === 'JNE' ? 1 : 0;
+                    $baseStatus['estimasi_pengambilan'] = $formatTanggal($order->order_date);
+                    break;
+                case 'Pesanan Diterima':
+                    $baseStatus['tracking'] = $order->jenis_pengiriman === 'JNE' ? 1 : 0;
+                    break;
+                case 'Alamat Layanan':
+                    $baseStatus['alamat_layanan'] = $order->alamat_node;
+                    break;
+                case 'Aktivasi Layanan':
+                    if ($existingStatus) {
+                        $nodelink = optional(optional(optional($order->kontrak->first())->kontrak_layanan->first())->kontrak_nodelink->first())->nodelink;
+                        $baseStatus['sn_kit'] = $order->sn_kit;
+                        $baseStatus['latitude'] = optional($nodelink)->latitude;
+                        $baseStatus['longitude'] = optional($nodelink)->longitude;
+                    }
+                    break;
+                case 'Surat Pernyataan Aktivasi':
+                    $baseStatus['is_ttd'] = $order->is_ttd;
+                    break;
+                case 'Pesanan Selesai':
+                    $baseStatus['popup'] = $popup ? 1 : 0;
+                    break;
+            }
 
-        return $baseStatus;
-    })->values();
-}
+            return $baseStatus;
+        })->values();
+    }
 
 
     public static function getOrderSummary($orderId, $userId)
@@ -479,6 +485,7 @@ private static function getRiwayatStatus($order, $userId, $orderId)
             'layanan',
             'produk',
             'cp_customer',
+            'produk.category',
             'order_status_history',
             'order_status_history.status',
             'proforma_invoice_item',
