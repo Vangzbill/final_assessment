@@ -51,7 +51,7 @@ class NpsController extends Controller
                 ->whereDate('created_at', Carbon::today()->toDateString())
                 ->first();
 
-            if(!$existingPopupToday || $request->id_order != null){
+            if(!$existingPopupToday && $request->id_order != null){
                 DB::beginTransaction();
                 $popup = new Popup();
                 $popup->customer_id = $user->id;
