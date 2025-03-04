@@ -246,7 +246,7 @@ class BillingController extends Controller
                 : null;
 
             $popup = Popup::where('customer_id', $user->id)
-                ->whereDate('created_at', Carbon::today())->where('order_id', null)
+                ->whereDate('created_at', Carbon::today())->where('id_order', null)
                 ->first();
 
             $data = [
