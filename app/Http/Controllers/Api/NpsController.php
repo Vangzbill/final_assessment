@@ -49,6 +49,7 @@ class NpsController extends Controller
             $user = JWTAuth::parseToken()->authenticate();
             $existingPopupToday = Popup::where('customer_id', $user->id)
                 ->whereDate('created_at', Carbon::today()->toDateString())
+                ->where('id_order', null)
                 ->first();
             if(!$existingPopupToday || $request->id_order != null){
                 DB::beginTransaction();
