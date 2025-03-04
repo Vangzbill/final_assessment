@@ -297,10 +297,10 @@ class Order extends Model
                 'total_keseluruhan' => $total_keseluruhan,
                 'jenis_pengiriman' => $order->jenis_pengiriman,
                 'nomor_resi' => $order->nomor_resi,
-                'provinsi' => $order->provinsi,
-                'kabupaten' => $order->kabupaten,
-                'kecamatan' => $order->kecamatan,
-                'kelurahan' => $order->kelurahan
+                'is_taken' => $order->jenis_pengiriman === 'JNE' ? 0 : 1,
+                'provinsi' => $order->provinsi ? $order->provinsi : '',
+                'kabupaten' => $order->kabupaten ? $order->kabupaten : '',
+                'alamat_lengkap' => $order->alamat_lengkap ? $order->alamat_lengkap : '',
             ];
         }
 
@@ -512,6 +512,12 @@ class Order extends Model
             'unique_order' => $order->unique_order,
             'nama_perangkat' => optional($order->proforma_invoice_item->first()->produk)->nama_produk,
             'order_date' => $formatTanggal($order->order_date),
+            'is_taken' => $order->jenis_pengiriman === 'JNE' ? 0 : 1,
+            'detail_alamat' => [
+                'provinsi' => optional($order->provinsi),
+                'kabupaten' => optional($order->kabupaten),
+                'alamat_lengkap' => optional($order->alamat_lengkap),
+            ],
             'penerima' => [
                 'nama' => optional($order->cp_customer)->nama,
                 'email' => optional($order->cp_customer)->email,
