@@ -59,7 +59,7 @@ class NodelinkController extends Controller
                 ->with(['kontrak', 'kontrak.kontrak_layanan', 'kontrak.kontrak_layanan.kontrak_nodelink', 'kontrak.kontrak_layanan.kontrak_nodelink.nodelink'])
                 ->with(['kontrak.kontrak_layanan.kontrak_nodelink.nodelink' => function ($query) use ($status) {
                     $query->whereNotNull('nama_node');
-                    if (!is_null($status)) {
+                    if (!is_null($status) && $status != 2) {
                         $query->where('status_nodelink', $status);
                     }
                 }])
