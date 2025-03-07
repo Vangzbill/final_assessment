@@ -14,7 +14,7 @@ class NodelinkController extends Controller
         return response()->json([
             'status' => $statusMessage,
             'message' => $message,
-            'data' => $data,
+            'data' => $data
         ], $statusCode);
     }
 

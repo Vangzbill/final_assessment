@@ -46,8 +46,10 @@ class ProductController extends Controller
         try {
             $product = ProductCategory::find($id);
             if ($product) {
+                // Ambil daftar produk yang termasuk dalam kategori ini
                 $perangkat = Product::where('kategori_produk_id', $id)->get();
 
+                // Ubah path gambar produk
                 $perangkat->map(function ($item) {
                     $imagePath = public_path('assets/images/' . $item->gambar_produk);
                     $item->gambar_produk = file_exists($imagePath) && $item->gambar_produk
@@ -56,15 +58,22 @@ class ProductController extends Controller
                     return $item;
                 });
 
-                $service = Service::select('nama_layanan as nama', 'harga_layanan')
+                // Cari ID produk yang terkait dengan kategori ini
+                $productsInCategory = Product::where('kategori_produk_id', $id)->pluck('id');
+
+                // Ambil layanan yang terkait dengan produk dalam kategori ini
+                $service = Service::whereIn('produk_id', $productsInCategory)
+                    ->select('nama_layanan as nama', 'harga_layanan')
                     ->distinct()
                     ->get();
 
+                // Proses gambar kategori produk
                 $imagePath = public_path('assets/images/' . $product->image);
                 $imageUrl = file_exists($imagePath) && $product->image
                     ? url('assets/images/' . $product->image)
                     : url('assets/images/default.png');
 
+                // Buat response
                 $data = [
                     'id' => $product->id,
                     'nama' => $product->nama_kategori,
@@ -83,8 +92,8 @@ class ProductController extends Controller
         }
     }
 
-
-    public function faqProduct($id){
+    public function faqProduct($id)
+    {
         try {
             $data_faq = FaqProduct::where('kategori_produk_id', $id)->get();
 
