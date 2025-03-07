@@ -191,6 +191,10 @@ class PaymentController extends Controller
             $billing_revenue->status = 'Paid';
             $billing_revenue->tanggal_bayar = now();
             $billing_revenue->save();
+        } else {
+            $existingBillingRevenue->status = 'Paid';
+            $existingBillingRevenue->tanggal_bayar = now();
+            $existingBillingRevenue->save();
         }
 
         return redirect()->away('https://Vangzbill.github.io/test-payment');
