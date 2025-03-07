@@ -41,7 +41,8 @@ class NodelinkController extends Controller
         }
     }
 
-    public function all(Request $request) {
+    public function all(Request $request)
+    {
         try {
             if (!$token = JWTAuth::getToken()) {
                 return $this->generateResponse('error', 'Token not provided', null, 401);
@@ -72,12 +73,11 @@ class NodelinkController extends Controller
                             });
                         });
                     });
-                })->flatten(4)->filter();
+                })->flatten(4)->filter()->values(); // Tambahkan .values()
 
             return $this->generateResponse('success', 'Data berhasil diambil', $nodelinkQuery);
         } catch (\Exception $e) {
             return $this->generateResponse('error', $e->getMessage(), null, 500);
         }
     }
-
 }
