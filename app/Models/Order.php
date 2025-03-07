@@ -513,11 +513,11 @@ class Order extends Model
             'nama_perangkat' => optional($order->proforma_invoice_item->first()->produk)->nama_produk,
             'order_date' => $formatTanggal($order->order_date),
             'is_taken' => $order->jenis_pengiriman === 'JNE' ? 0 : 1,
-            'detail_alamat' => [
-                'provinsi' => optional($order->provinsi),
-                'kabupaten' => optional($order->kabupaten),
-                'alamat_lengkap' => optional($order->alamat_lengkap),
-            ],
+            'detail_alamat' => $order->jenis_pengiriman === 'JNE' ? [
+                'provinsi' => $order->provinsi,
+                'kabupaten' => $order->kabupaten,
+                'alamat_lengkap' => $order->alamat_lengkap,
+            ] : (object)[],
             'penerima' => [
                 'nama' => optional($order->cp_customer)->nama,
                 'email' => optional($order->cp_customer)->email,
