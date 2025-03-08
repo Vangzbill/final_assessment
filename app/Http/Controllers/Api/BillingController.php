@@ -292,7 +292,7 @@ class BillingController extends Controller
                 return $this->generateResponse('error', 'Billing tidak ditemukan');
             }
 
-            $imagePath = public_path('assets/images/');
+            $imagePath = storage_path('app/public/');
             $imageName = 'bukti_ppn_' . $billing_id . '.' . $bukti_ppn->getClientOriginalExtension();
             $bukti_ppn->move($imagePath, $imageName);
 
@@ -368,7 +368,7 @@ class BillingController extends Controller
                 return $this->generateResponse('error', 'Billing tidak ditemukan');
             }
 
-            $imagePath = public_path('assets/images/' . $billing->bukti_ppn);
+            $imagePath = storage_path('app/public/' . $billing->bukti_ppn);
             if (!file_exists($imagePath)) {
                 return $this->generateResponse('error', 'Bukti PPN tidak ditemukan');
             }
