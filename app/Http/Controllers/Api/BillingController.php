@@ -240,9 +240,9 @@ class BillingController extends Controller
 
             $invoice = ProformaInvoice::where('order_id', $orderId)->first();
 
-            $imagePath = public_path('assets/images/' . $billing->bukti_ppn);
+            $imagePath = storage_path('app/public/' . $billing->bukti_ppn);
             $bukti_ppn = file_exists($imagePath) && $billing->bukti_ppn
-                ? url('assets/images/' . $billing->bukti_ppn)
+                ? url('app/public/' . $billing->bukti_ppn)
                 : null;
 
             $popup = Popup::where('customer_id', $user->id)
