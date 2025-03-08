@@ -94,6 +94,7 @@ Route::middleware('add.ngrok.header')->group(function(){
         Route::get('nearby', [BillingController::class, 'nearby']);
         Route::get('nodelink', [NodelinkController::class, 'index']);
         Route::get('month-billing', [BillingController::class, 'monthBilling']);
+        Route::get('ppn-image/{id}', [BillingController::class, 'ppnImage']);
     });
 
     Route::middleware('jwt.verify')->prefix('nps')->group(callback: function () {

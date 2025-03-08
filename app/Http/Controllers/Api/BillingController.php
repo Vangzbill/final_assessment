@@ -359,4 +359,23 @@ class BillingController extends Controller
             return $this->generateResponse('error', $e->getMessage());
         }
     }
+
+    public function ppnImage($billingId)
+    {
+        try {
+            $billing = BillingRevenue::find($billingId);
+            if (!$billing) {
+                return $this->generateResponse('error', 'Billing tidak ditemukan');
+            }
+
+            $imagePath = public_path('assets/images/' . $billing->bukti_ppn);
+            if (!file_exists($imagePath)) {
+                return $this->generateResponse('error', 'Bukti PPN tidak ditemukan');
+            }
+
+            return response()->file($imagePath);
+        } catch (\Exception $e) {
+            return $this->generateResponse('error', $e->getMessage());
+        }
+    }
 }
