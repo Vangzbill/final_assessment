@@ -178,7 +178,7 @@ class AuthController extends Controller
                 set_time_limit(3600);
                 Mail::to($customer->email_perusahaan)->send(new SendOtpMail($customer->otp_code));
                 DB::commit();
-                return $this->generateResponse('success', 'Register success. Please check your email for OTP', $customer, 201);
+                return $this->generateResponse('success', 'Register success. Please check your email for OTP', $customer);
             } else {
                 DB::rollBack();
                 return $this->generateResponse('error', 'Register failed', null, 400);
