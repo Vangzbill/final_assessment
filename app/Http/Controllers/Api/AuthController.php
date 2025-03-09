@@ -160,6 +160,11 @@ class AuthController extends Controller
                 return $this->generateResponse('error', $validator->errors()->first(), null, 422);
             }
 
+            $email = Customer::where('email_perusahaan', $request->email_perusahaan)->first();
+            if($email){
+                return $this->generateResponse('error', 'Email already registered', null, 400);
+            }
+
             $customer = new Customer();
             $customer->nama_perusahaan = $request->nama_perusahaan;
             $customer->email_perusahaan = $request->email_perusahaan;
