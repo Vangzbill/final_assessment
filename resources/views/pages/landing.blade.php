@@ -1,26 +1,6 @@
 @extends('layout.blank')
 @section('content')
-    <style>
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 25vh;
-            background: 
-                linear-gradient(
-                    180deg,
-                    rgba(0, 123, 255, 0.8) 0%,
-                    rgba(0, 123, 255, 0.4) 50%,
-                    rgba(0, 0, 0, 1) 100%
-                ),
-                url('{{ asset("assets/images/background2.png") }}');
-            background-size: cover;
-            background-position: center;
-            z-index: -1;
-        }
-    </style>
+    @include('components.navbar')
     <div class="container mt-5">
         <div class="row pt-5 pe-3 ps-3 mb-5">
             <div class="col-md-12 d-flex justify-content-center align-items-center flex-column">
@@ -38,9 +18,9 @@
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
                     font-weight: bold;">
-                    Digital Touchpoint
+                    Digisatlink
                 </h1>
-                <h5 class="text-center text-white ps-5 mt-3 pe-5">PT XYZ sebagai penyedia jasa layanan satelit yang Lorem ipsum dolor sit amet, consectetur adipisicing elit. Iusto, velit vero necessitatibus sit corporis explicabo eligendi numquam earum nesciunt optio quas obcaecati! Quibusdam sequi nostrum similique voluptate earum, recusandae magnam!</h5>
+                <h5 class="text-center text ps-5 mt-3 pe-5">PT XYZ sebagai penyedia jasa layanan satelit yang Lorem ipsum dolor sit amet, consectetur adipisicing elit. Iusto, velit vero necessitatibus sit corporis explicabo eligendi numquam earum nesciunt optio quas obcaecati! Quibusdam sequi nostrum similique voluptate earum, recusandae magnam!</h5>
                 <button class="btn btn-primary mt-4 px-5 py-3" style="
                     font-size: 1.25rem;
                     border-radius: 25px;
@@ -67,9 +47,10 @@
                         <div class="card" style="background: rgba(0, 0, 0, 0.1); backdrop-filter: blur(10px);">
                             <div class="card-body p-0" style="position: relative;">
                                 <img src="{{ asset('assets/images/produk.png') }}" class="w-100" style="height: 400px; object-fit: cover;">
-                                <div style="position: absolute; bottom: 20px; left: 20px; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
-                                    <h5 class="card-title mb-0">Service 1</h5>
-                                    <p class="card-text">Lorem ipsum dolor sit amet</p>
+                                <div style="position: absolute; bottom: 20px; left: 20px; color: white; text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);">
+                                    <h5 class="card-title mb-0">Fixed Satmobile</h5>
+                                    <p class="card-text">Data Standar Tanpa Batas, Prioritas Jaringan, Dukungan Prioritas
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -78,9 +59,10 @@
                         <div class="card" style="background: rgba(0, 0, 0, 0.1); backdrop-filter: blur(10px);">
                             <div class="card-body p-0" style="position: relative;">
                                 <img src="{{ asset('assets/images/produk2.png') }}" class="w-100" style="height: 400px; object-fit: cover;">
-                                <div style="position: absolute; bottom: 20px; left: 20px; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
-                                    <h5 class="card-title mb-0">Service 2</h5>
-                                    <p class="card-text">Lorem ipsum dolor sit amet</p>
+                                <div style="position: absolute; bottom: 20px; left: 20px; color: white; text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);">
+                                    <h5 class="card-title mb-0">Land Satmobile</h5>
+                                    <p class="card-text">Data Daratan Tanpa Batas, Dalam Perjalanan + Penggunaan Laut
+                                    </p>
                                 </div>
                             </div>
                         </div>
