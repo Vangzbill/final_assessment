@@ -3,6 +3,7 @@
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\ChatbotController;
 use App\Http\Controllers\Web\PaymentController;
+use App\Http\Controllers\Web\ProductController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('add.ngrok.header')->group(function () {
@@ -19,4 +20,6 @@ Route::middleware('add.ngrok.header')->group(function () {
     });
 
     Route::get('chatbot', [ChatbotController::class, 'index'])->name('chatbot');
+
+    Route::get('product', [ProductController::class, 'index'])->name('product.index');
 });

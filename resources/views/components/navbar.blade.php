@@ -8,16 +8,16 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="{{ route('dashboard') }}">Home</a>
+                    <a class="nav-link text-dark {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-dark" href="#">Produk</a>
+                    <a class="nav-link text-dark {{ request()->routeIs('product.index') ? 'active' : '' }}" href="{{ route('product.index') }}">Produk</a>
                 </li>
             </ul>
 
             <ul class="navbar-nav d-flex align-items-center">
                 <li class="nav-item me-3">
-                    <a class="nav-link text-dark" href="{{ route('chatbot') }}">
+                    <a class="nav-link text-dark {{ request()->routeIs('chatbot') ? 'active' : '' }}" href="{{ route('chatbot') }}">
                         <i class="bi bi-robot"></i>
                     </a>
                 </li>
