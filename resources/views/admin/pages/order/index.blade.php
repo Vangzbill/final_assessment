@@ -20,7 +20,7 @@
         </div>
         <section class="section">
             <div class="card">
-                <div class="card-body">
+                <div class="card-body table-responsive">
                     <table class="table table-striped" id="table1">
                         <thead>
                             <tr>
@@ -50,14 +50,14 @@
             serverSide: true,
             ajax: '{{ route('admin.order') }}',
             columns: [
-                { data: 'id', name: 'id' },
+                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
                 { data: 'unique_order', name: 'unique_order' },
                 { data: 'customer', name: 'customer' },
-                { data: 'product', name: 'product' },
+                { data: 'produk', name: 'product' },
                 { data: 'jenis_pengiriman', name: 'jenis_pengiriman' },
                 { data: 'total', name: 'total' },
                 { data: 'status', name: 'status' },
-                { data: 'action', name: 'action' },
+                { data: 'action', name: 'action', orderable: false, searchable: false },
             ]
         });
     });

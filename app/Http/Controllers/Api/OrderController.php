@@ -10,6 +10,7 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Yajra\DataTables\Facades\DataTables;
 
 class OrderController extends Controller
 {
@@ -187,7 +188,8 @@ class OrderController extends Controller
         }
     }
 
-    public function cekPayment($id){
+    public function cekPayment($id)
+    {
         try {
             $user = JWTAuth::parseToken()->authenticate();
             $order = Order::cekOrder($id, $user->id);
@@ -228,7 +230,8 @@ class OrderController extends Controller
         }
     }
 
-    public function address(Request $request){
+    public function address(Request $request)
+    {
         try {
             $user = JWTAuth::parseToken()->authenticate();
             $order = Nodelink::addAddressNode($request->order_id, $user->id, $request->provinsi, $request->kabupaten);
@@ -257,7 +260,8 @@ class OrderController extends Controller
         }
     }
 
-    public function tracking($resi){
+    public function tracking($resi)
+    {
         try {
             $user = JWTAuth::parseToken()->authenticate();
             $order = Order::tracking($resi);
@@ -268,25 +272,6 @@ class OrderController extends Controller
             return $this->generateResponse('success', 'Data retrieved successfully', $order);
         } catch (\Exception $e) {
             return $this->generateResponse('error', $e->getMessage(), null, 500);
-        }
-    }
-
-    public function adminOrder(Request $request){
-        $order_management = Order::orderManagement($request);
-
-        if ($order_management) {
-            $data = $order_management['data'];
-            $totalRecords = $order_management['total'];
-            $totalFiltered = $order_management['filtered'];
-
-            return response()->json([
-                'draw' => $request->input('draw'),
-                'recordsTotal' => $totalRecords,
-                'recordsFiltered' => $totalFiltered,
-                'data' => $data,
-            ]);
-        } else {
-            return $this->generateResponse('error','Data tidak ditemukan', null,404);
         }
     }
 }
