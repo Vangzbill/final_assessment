@@ -3,6 +3,7 @@
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\ChatbotController;
 use App\Http\Controllers\Web\HomeController;
+use App\Http\Controllers\Web\OrderController;
 use App\Http\Controllers\Web\PaymentController;
 use App\Http\Controllers\Web\ProductController;
 use Illuminate\Support\Facades\Route;
@@ -26,8 +27,6 @@ Route::middleware('add.ngrok.header')->group(function () {
 
     Route::prefix('admin')->group(function () {
         Route::get('/', [HomeController::class, 'adminLogin'])->name('admin.login');
-        Route::get('pesanan', function () {
-            return view('admin.pages.order.index');
-        });
+        Route::get('pesanan', [OrderController::class,'index'])->name('admin.order');
     });
 });

@@ -593,4 +593,8 @@ class Order extends Model
             return response()->json($response->json(), 400);
         }
     }
+
+    public function orderManagement($request){
+        
+    }
 }

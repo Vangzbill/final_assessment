@@ -270,4 +270,23 @@ class OrderController extends Controller
             return $this->generateResponse('error', $e->getMessage(), null, 500);
         }
     }
+
+    public function adminOrder(Request $request){
+        $order_management = Order::orderManagement($request);
+
+        if ($order_management) {
+            $data = $order_management['data'];
+            $totalRecords = $order_management['total'];
+            $totalFiltered = $order_management['filtered'];
+
+            return response()->json([
+                'draw' => $request->input('draw'),
+                'recordsTotal' => $totalRecords,
+                'recordsFiltered' => $totalFiltered,
+                'data' => $data,
+            ]);
+        } else {
+            return $this->generateResponse('error','Data tidak ditemukan', null,404);
+        }
+    }
 }

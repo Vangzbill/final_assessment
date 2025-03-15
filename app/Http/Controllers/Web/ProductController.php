@@ -13,5 +13,4 @@ class ProductController extends Controller
         $product = ProductCategory::select('id', 'nama_kategori as nama', 'deskripsi', 'image')->get()->values();
         return view('pages.feature.product', compact('product'));
     }
-
 }

@@ -188,7 +188,7 @@ class PaymentController extends Controller
             $billing_revenue->total_tagihan = $order->total_harga;
             $billing_revenue->total_akhir = $order->total_harga + 16000;
             $billing_revenue->jatuh_tempo = now()->addDays(10);
-            $billing_revenue->status = 'Paid';
+        $billing_revenue->status = 'Paid';
             $billing_revenue->tanggal_bayar = now();
             $billing_revenue->save();
         } else {

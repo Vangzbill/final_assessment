@@ -168,6 +168,7 @@ class BillingController extends Controller
                 ->join('tbl_order', 'tbl_billing_revenue.order_id', '=', 'tbl_order.id')
                 ->where('tbl_order.customer_id', $user->id)
                 ->where('tbl_billing_revenue.status', 'Unpaid')
+                ->orWhere('tbl_billing_revenue.bukti_ppn', null)
                 ->orderBy('tbl_billing_revenue.jatuh_tempo', 'asc')
                 ->limit(1)->get();
 
