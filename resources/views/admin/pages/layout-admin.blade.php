@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vertical Navbar - Mazer Admin Dashboard</title>
+    <title>Admin Page</title>
     <link rel="stylesheet" href="{{asset('dist/assets/compiled/css/app.css')}}">
     <link rel="stylesheet" href="{{asset("dist/assets/compiled/css/app-dark.css")}}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.1/css/bootstrap.min.css" rel="stylesheet">

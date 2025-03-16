@@ -3,14 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CpRequest;
 use App\Models\CpCustomer;
 use App\Models\Nodelink;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use Yajra\DataTables\Facades\DataTables;
 
 class OrderController extends Controller
 {

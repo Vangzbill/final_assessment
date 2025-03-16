@@ -4,11 +4,23 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\OrderStatusHistory;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 
 class OrderController extends Controller
 {
+    private function generateResponse($status, $message, $data = null, $code = 200)
+    {
+        return response()->json([
+            'status' => $status,
+            'message' => $message,
+            'data' => $data
+        ], $code);
+    }
+
     public function index(Request $request)
     {
         if ($request->ajax()) {
@@ -17,11 +29,11 @@ class OrderController extends Controller
 
             return DataTables::of($orders)
                 ->addIndexColumn()
-                ->addColumn('no', function ($order) {
-                    return '';
-                })
                 ->addColumn('unique_order', function ($order) {
                     return $order->unique_order;
+                })
+                ->addColumn('order_date', function ($order) {
+                    return Carbon::parse($order->order_date)->format('d-m-Y');
                 })
                 ->addColumn('customer', function ($order) {
                     return '<strong>' . $order->customer->nama_perusahaan . '</strong><br>' . $order->customer->alamat;
@@ -59,10 +71,20 @@ class OrderController extends Controller
                     return '<span class="badge bg-' . $warna . '">' . $status . '</span>';
                 })
                 ->addColumn('action', function ($order) {
-                    return '<a href="" class="btn btn-primary btn-sm">View</a>
-                        <a href="" class="btn btn-warning btn-sm">Update Status</a>';
+                    if ($order->order_status_history->last()->status->id == 2) {
+                        return '<a href="javascript:void(0);" class="btn btn-primary btn-sm view-order-btn" data-id="' . $order->id . '">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="btn btn-warning btn-sm update-status-btn" data-id="' . $order->id . '">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>';
+                    } else {
+                        return '<a href="javascript:void(0);" class="btn btn-primary btn-sm view-order-btn" data-id="' . $order->id . '">
+                            <i class="bi bi-eye"></i>
+                        </a>';
+                    }
                 })
-                ->rawColumns(['customer', 'produk', 'jenis_pengiriman', 'status', 'action'])
+                ->rawColumns(['unique_order', 'order_date', 'customer', 'produk', 'jenis_pengiriman', 'status', 'action'])
                 ->filter(function ($query) use ($request) {
                     if (!empty($request->get('search')['value'])) {
                         $search = $request->get('search')['value'];
@@ -83,7 +105,7 @@ class OrderController extends Controller
                             ->orWhere('total_harga', 'LIKE', "%{$search}%")
                             ->orWhereHas('order_status_history', function ($q) use ($search) {
                                 $q->whereHas('status', function ($q2) use ($search) {
-                                    $q2->where('nama', 'LIKE', "%{$search}%");
+                                    $q2->where('nama_status_order', 'LIKE', "%{$search}%");
                                 });
                             });
                     }
@@ -93,4 +115,60 @@ class OrderController extends Controller
         return view('admin.pages.order.index');
     }
 
+    public function updateStatus($id)
+    {
+        try {
+            $order = Order::find($id);
+            DB::beginTransaction();
+            $orderHistory = new OrderStatusHistory();
+            $orderHistory->order_id = $order->id;
+            $orderHistory->status_id = 3;
+            $orderHistory->keterangan = 'Pesanan sedang dikirim';
+            $orderHistory->tanggal = now();
+            $orderHistory->save();
+
+            $order->riwayat_status_order_id = $orderHistory->id;
+            $order->save();
+            DB::commit();
+
+            return $this->generateResponse('success', 'Status pesanan berhasil diubah', null, 200);
+        } catch (\Exception $e) {
+            return $this->generateResponse('error', $e->getMessage(), null, 500);
+        }
+    }
+
+    public function show($id)
+    {
+        $order = Order::with(['produk', 'customer', 'order_status_history.status'])
+            ->where('id', $id)
+            ->first();
+
+        if (!$order) {
+            return $this->generateResponse('error', 'Pesanan tidak ditemukan', null, 404);
+        }
+
+        $statusList = $order->order_status_history->map(function ($history) {
+            return [
+                'nama_status' => $history->status->nama_status_order,
+                'tanggal' => Carbon::parse($history->tanggal)->format('d-m-Y H:i'),
+                'keterangan' => $history->keterangan ?? '-',
+            ];
+        });
+
+        $response = [
+            'unique_order' => $order->unique_order,
+            'order_date' => Carbon::parse($order->order_date)->format('d-m-Y'),
+            'customer' => [
+                'nama_perusahaan' => $order->customer->nama_perusahaan,
+            ],
+            'produk' => [
+                'nama_produk' => $order->produk->nama_produk,
+            ],
+            'jenis_pengiriman' => $order->jenis_pengiriman,
+            'total_harga' => $order->total_harga,
+            'status_list' => $statusList,
+        ];
+
+        return $this->generateResponse('success', 'Detail pesanan ditemukan', $response, 200);
+    }
 }

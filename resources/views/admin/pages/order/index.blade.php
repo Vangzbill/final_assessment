@@ -26,6 +26,7 @@
                             <tr>
                                 <th>No</th>
                                 <th>Order ID</th>
+                                <th>Tanggal Pesanan</th>
                                 <th>Pelanggan</th>
                                 <th>Produk</th>
                                 <th>Jenis Pengiriman</th>
@@ -42,24 +43,166 @@
         </section>
     </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
-<script>
-    $(document).ready(function() {
-        $('#table1').DataTable({
-            processing: true,
-            serverSide: true,
-            ajax: '{{ route('admin.order') }}',
-            columns: [
-                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-                { data: 'unique_order', name: 'unique_order' },
-                { data: 'customer', name: 'customer' },
-                { data: 'produk', name: 'product' },
-                { data: 'jenis_pengiriman', name: 'jenis_pengiriman' },
-                { data: 'total', name: 'total' },
-                { data: 'status', name: 'status' },
-                { data: 'action', name: 'action', orderable: false, searchable: false },
-            ]
+    @include('admin.pages.order.modal')
+
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            $('#table1').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: '{{ route('admin.order') }}',
+                    type: "GET",
+                    error: function(xhr, status, error) {
+                        console.log("AJAX Error: ", xhr.responseText);
+                    }
+                },
+                columns: [{
+                        data: 'DT_RowIndex',
+                        name: 'DT_RowIndex',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
+                        data: 'unique_order',
+                        name: 'unique_order',
+                        orderable: false,
+                        searchable: true
+                    },
+                    {
+                        data: 'order_date',
+                        name: 'order_date',
+                        orderable: false,
+                        searchable: true
+                    },
+                    {
+                        data: 'customer',
+                        name: 'customer',
+                        orderable: false,
+                        searchable: true
+                    },
+                    {
+                        data: 'produk',
+                        name: 'produk',
+                        orderable: false,
+                        searchable: true
+                    },
+                    {
+                        data: 'jenis_pengiriman',
+                        name: 'jenis_pengiriman',
+                        orderable: false,
+                        searchable: true
+                    },
+                    {
+                        data: 'total',
+                        name: 'total',
+                        orderable: false,
+                        searchable: true
+                    },
+                    {
+                        data: 'status',
+                        name: 'status',
+                        orderable: false,
+                        searchable: true
+                    },
+                    {
+                        data: 'action',
+                        name: 'action',
+                        orderable: false,
+                        searchable: false
+                    },
+                ]
+            });
+
+            $('#table1').on('click', '.update-status-btn', function() {
+                let orderId = $(this).data('id');
+
+                Swal.fire({
+                    title: "Konfirmasi Update Pengiriman",
+                    text: "Apakah kamu yakin ingin update status pesanan ini?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Ya, Update!",
+                    cancelButtonText: "Batal"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/admin/pesanan/update-status/${orderId}`, {
+                                method: "GET",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr(
+                                        "content")
+                                },
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.status == 'success') {
+                                    Swal.fire({
+                                        title: "Berhasil!",
+                                        text: "Pesanan berhasil diupdate.",
+                                        icon: "success",
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    }).then(() => {
+                                        location
+                                            .reload();
+                                    });
+                                } else {
+                                    Swal.fire("Gagal!", "Terjadi kesalahan saat mengedit.",
+                                        "error");
+                                }
+                            })
+                            .catch(error => {
+                                console.error("Error:", error);
+                            });
+                    }
+                });
+            });
+
+            $('#table1').on('click', '.view-order-btn', function() {
+                let orderId = $(this).data('id');
+
+                $.ajax({
+                    url: `/admin/pesanan/${orderId}`,
+                    type: "GET",
+                    success: function(data) {
+                        if (data.status === 'success') {
+                            let order = data.data;
+
+                            $('#modal-order-id').text(order.unique_order);
+                            $('#modal-order-date').text(order.order_date);
+                            $('#modal-payment-date').text(order.payment_date);
+                            $('#modal-customer').text(order.customer.nama_perusahaan);
+                            $('#modal-product').text(order.produk.nama_produk);
+                            $('#modal-shipping').text(order.jenis_pengiriman);
+                            $('#modal-kit-sn').text(order.kit_serial_number);
+                            $('#modal-total').text("Rp " + order.total_harga.toLocaleString());
+                            $('#modal-status-list').empty();
+
+                            order.status_list.forEach(status => {
+                                $('#modal-status-list').append(`
+                                    <li class="list-group-item">
+                                        <strong>${status.nama_status}</strong><br>
+                                        <small>${status.tanggal}</small><br>
+                                        <em>${status.keterangan}</em>
+                                    </li>
+                                `);
+                            });
+
+                            $('#orderModal').modal('show');
+                        } else {
+                            alert("Gagal mengambil data pesanan!");
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error:", xhr.responseText);
+                    }
+                });
+            });
         });
-    });
-</script>
+    </script>
 @endsection

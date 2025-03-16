@@ -28,5 +28,7 @@ Route::middleware('add.ngrok.header')->group(function () {
     Route::prefix('admin')->group(function () {
         Route::get('/', [HomeController::class, 'adminLogin'])->name('admin.login');
         Route::get('pesanan', [OrderController::class,'index'])->name('admin.order');
+        Route::get('pesanan/update-status/{id}', [OrderController::class, 'updateStatus']);
+        Route::get('pesanan/{id}', [OrderController::class, 'show']);
     });
 });
