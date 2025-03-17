@@ -49,7 +49,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function() {
-            $('#table1').DataTable({
+            let table = $('#table1').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: {
@@ -68,13 +68,13 @@
                     {
                         data: 'unique_order',
                         name: 'unique_order',
-                        orderable: false,
+                        orderable: true,
                         searchable: true
                     },
                     {
                         data: 'order_date',
                         name: 'order_date',
-                        orderable: false,
+                        orderable: true,
                         searchable: true
                     },
                     {
@@ -96,9 +96,9 @@
                         searchable: true
                     },
                     {
-                        data: 'total',
-                        name: 'total',
-                        orderable: false,
+                        data: 'total_harga',
+                        name: 'total_harga',
+                        orderable: true,
                         searchable: true
                     },
                     {
@@ -114,6 +114,12 @@
                         searchable: false
                     },
                 ]
+            });
+
+            $('#table1_filter input').unbind().bind('keypress', function(e) {
+                if (e.keyCode === 13) {
+                    table.search(this.value).draw();
+                }
             });
 
             $('#table1').on('click', '.update-status-btn', function() {

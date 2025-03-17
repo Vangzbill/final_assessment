@@ -8,7 +8,7 @@ use App\Models\OrderStatusHistory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Yajra\DataTables\Facades\DataTables;
+use Yajra\DataTables\DataTables;
 
 class OrderController extends Controller
 {
@@ -27,13 +27,46 @@ class OrderController extends Controller
             $orders = Order::with(['produk', 'layanan', 'order_status_history.status', 'cp_customer', 'customer'])
                 ->select('tbl_order.*');
 
+            if ($request->has('order')) {
+                $columns = [
+                    'unique_order',
+                    'order_date',
+                    null, // customer (tidak bisa diurutkan)
+                    null, // produk (tidak bisa diurutkan)
+                    null, // jenis_pengiriman (tidak bisa diurutkan)
+                    'total_harga',
+                    null, // status (tidak bisa diurutkan)
+                    null  // action (tidak bisa diurutkan)
+                ];
+
+                foreach ($request->order as $order) {
+                    $columnIndex = $order['column'];
+                    $columnName = $columns[$columnIndex] ?? null;
+                    $direction = $order['dir'] ?? 'asc';
+
+                    if ($columnName) {
+                        if ($columnName === 'order_date') {
+                            $orders->orderBy('tbl_order.order_date', $direction);
+                        } else {
+                            $orders->orderBy($columnName, $direction);
+                        }
+                    }
+                }
+            }
+
             return DataTables::of($orders)
                 ->addIndexColumn()
                 ->addColumn('unique_order', function ($order) {
                     return $order->unique_order;
                 })
+                ->orderColumn('unique_order', function ($query, $order) {
+                    $query->orderBy('tbl_order.unique_order', $order);
+                })
                 ->addColumn('order_date', function ($order) {
                     return Carbon::parse($order->order_date)->format('d-m-Y');
+                })
+                ->orderColumn('order_date', function ($query, $order) {
+                    $query->orderBy('tbl_order.order_date', $order);
                 })
                 ->addColumn('customer', function ($order) {
                     return '<strong>' . $order->customer->nama_perusahaan . '</strong><br>' . $order->customer->alamat;
@@ -51,8 +84,11 @@ class OrderController extends Controller
                     }
                     return $pengiriman;
                 })
-                ->addColumn('total', function ($order) {
+                ->addColumn('total_harga', function ($order) {
                     return 'Rp ' . number_format($order->total_harga, 0, ',', '.');
+                })
+                ->orderColumn('total_harga', function ($query, $order) {
+                    $query->orderBy('tbl_order.total_harga', $order);
                 })
                 ->addColumn('status', function ($order) {
                     $status = $order->order_status_history->last()->status->nama_status_order;
@@ -110,6 +146,7 @@ class OrderController extends Controller
                             });
                     }
                 })
+
                 ->make(true);
         }
         return view('admin.pages.order.index');

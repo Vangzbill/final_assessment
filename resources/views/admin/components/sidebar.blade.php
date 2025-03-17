@@ -2,13 +2,13 @@
     <li class="sidebar-title">Menu</li>
 
     <li class="sidebar-item {{ Request::is('*pesanan*') ? 'active' : '' }}">
-        <a href="" class='sidebar-link'>
+        <a href="{{ route('admin.order') }}" class='sidebar-link'>
             <i class="bi bi-cart-fill"></i>
             <span>Pesanan</span>
         </a>
     </li>
     <li class="sidebar-item {{ Request::is('*tagihan*') ? 'active' : '' }}">
-        <a href="" class='sidebar-link'>
+        <a href="{{ route('admin.billing') }}" class='sidebar-link'>
             <i class="bi bi-receipt"></i>
             <span>Tagihan</span>
         </a>
