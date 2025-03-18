@@ -114,7 +114,6 @@ $(document).ready(function () {
 
     let chatMessages = $("#chatMessages");
 
-    // Fungsi untuk menambahkan pesan ke chat
     function addMessage(sender, message, isBot = false) {
         let messageElement = $("<div>").addClass("message").text(message);
 
@@ -125,14 +124,12 @@ $(document).ready(function () {
         }
 
         chatMessages.append(messageElement);
-        chatMessages.scrollTop(chatMessages[0].scrollHeight); // Scroll ke bawah
+        chatMessages.scrollTop(chatMessages[0].scrollHeight);
     }
 
-    // Tampilkan pesan bot "Hallo" saat pertama kali halaman dimuat
     addMessage("Bot", "Hallo! Ada yang bisa saya bantu?", true);
 
-    // Event handler untuk form submit
-    $("#chatForm").submit(function(event) {
+    $("#chatForm").submit(function (event) {
         event.preventDefault();
         let input = $("#chatInput");
         let message = input.val().trim();
@@ -140,11 +137,24 @@ $(document).ready(function () {
         if (message) {
             addMessage("You", message, false);
 
-            setTimeout(function() {
-                addMessage("Bot", "Saya masih dalam tahap pengembangan! 😊", true);
-            }, 1000);
+            $.ajax({
+                url: "http://127.0.0.1:5000/api/chat",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    question: message,
+                }),
+                success: function(response) {
+                    addMessage("Bot", response.answer, true);
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error:", status, error);
+                    addMessage("Bot", "Maaf, terjadi kesalahan saat mendapatkan jawaban!", true);
+                }
+            });
 
-            input.val(""); // Kosongkan input setelah dikirim
+            input.val("");
         }
     });
+
 });
