@@ -39,6 +39,7 @@ class Order extends Model
         'provinsi',
         'kabupaten',
         'alamat_lengkap',
+        'is_clicked',
     ];
 
     public $timestamps = false;
@@ -355,7 +356,7 @@ class Order extends Model
 
     public static function getOrderDetail($orderId, $userId)
     {
-        $order = Order::select('id', 'unique_order', 'total_harga', 'order_date', 'jenis_pengiriman', 'nomor_resi', 'alamat_node', 'sn_kit', 'is_ttd', 'customer_id')
+        $order = Order::select('id', 'unique_order', 'total_harga', 'order_date', 'jenis_pengiriman', 'nomor_resi', 'alamat_node', 'sn_kit', 'is_ttd', 'customer_id', 'is_clicked', 'payment_url', 'provinsi', 'kabupaten', 'alamat_lengkap')
             ->with([
                 'layanan:id,nama_layanan',
                 'produk:id,nama_produk,kategori_produk_id',
@@ -443,6 +444,8 @@ class Order extends Model
             switch ($statusName) {
                 case 'Pembayaran':
                     $baseStatus['harga'] = $order->total_harga;
+                    $baseStatus['is_clicked'] = $order->is_clicked;
+                    $baseStatus['payment_url'] = $order->payment_url;
                     break;
                 case 'Pengiriman':
                     if ($existingStatus) {

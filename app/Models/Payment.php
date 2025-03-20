@@ -69,6 +69,7 @@ class Payment extends Model
                 ->update([
                     'snap_token' => $snapToken,
                     'payment_status' => 1,
+                    'is_clicked' => 1,
                     'payment_url' => 'https://app.sandbox.midtrans.com/snap/v4/redirection/' . $snapToken . '#/payment-list'
                 ]);
             $order_data = Order::find($orderId);
