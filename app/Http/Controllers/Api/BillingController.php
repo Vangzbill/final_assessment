@@ -286,6 +286,10 @@ class BillingController extends Controller
             $billing_id = $request->billing_id;
             $bukti_ppn = $request->file('bukti_ppn');
 
+            $request->validate([
+                'bukti_ppn' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            ]);
+
             DB::beginTransaction();
 
             $billing = BillingRevenue::find($billing_id);
