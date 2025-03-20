@@ -356,7 +356,7 @@ class Order extends Model
 
     public static function getOrderDetail($orderId, $userId)
     {
-        $order = Order::select('id', 'unique_order', 'total_harga', 'order_date', 'jenis_pengiriman', 'nomor_resi', 'alamat_node', 'sn_kit', 'is_ttd', 'customer_id', 'is_clicked', 'payment_url', 'provinsi', 'kabupaten', 'alamat_lengkap')
+        $order = Order::select('id', 'unique_order', 'total_harga', 'order_date', 'jenis_pengiriman', 'nomor_resi', 'alamat_node', 'sn_kit', 'is_ttd', 'customer_id', 'is_clicked', 'payment_url', 'provinsi', 'kabupaten', 'alamat_lengkap', 'payment_status')
             ->with([
                 'layanan:id,nama_layanan',
                 'produk:id,nama_produk,kategori_produk_id',
@@ -446,6 +446,7 @@ class Order extends Model
                     $baseStatus['harga'] = $order->total_harga;
                     $baseStatus['is_clicked'] = $order->is_clicked;
                     $baseStatus['payment_url'] = $order->payment_url;
+                    $baseStatus['is_done'] = $order->payment_status == 2 ? 1 : 0;
                     break;
                 case 'Pengiriman':
                     if ($existingStatus) {
