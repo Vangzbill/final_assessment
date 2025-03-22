@@ -84,8 +84,9 @@ class Payment extends Model
         }
     }
 
-    public static function paymentBillingMidtrans($billing_id, $user_id){
-        try{
+    public static function paymentBillingMidtrans($billing_id, $user_id)
+    {
+        try {
             $server_key = env('MIDTRANS_SERVER_KEY');
             $client_key = env('MIDTRANS_CLIENT_KEY');
             Config::$serverKey = $server_key;
@@ -140,8 +141,13 @@ class Payment extends Model
 
             $payment_url = 'https://app.sandbox.midtrans.com/snap/v4/redirection/' . $snapToken . '#/payment-list';
 
+            BillingRevenue::where('id', $billing_id)->update([
+                'is_clicked' => 1,
+                'payment_url' => $payment_url
+            ]);
+
             return $payment_url;
-        }catch(Exception $e){
+        } catch (Exception $e) {
             Log::error('Error occurred while retrieving Snap token: ' . $e->getMessage(), [
                 'billing_id' => $billing_id,
                 'user_id' => $user_id,

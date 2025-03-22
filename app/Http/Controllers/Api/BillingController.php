@@ -222,7 +222,9 @@ class BillingController extends Controller
                 'tbl_billing_revenue.total_akhir as nominal',
                 'tbl_billing_revenue.jatuh_tempo',
                 'tbl_billing_revenue.status',
-                'tbl_billing_revenue.bukti_ppn as bukti_ppn'
+                'tbl_billing_revenue.bukti_ppn as bukti_ppn',
+                'tbl_billing_revenue.is_clicked',
+                'tbl_billing_revenue.payment_url',
             ])
                 ->join('tbl_order', 'tbl_billing_revenue.order_id', '=', 'tbl_order.id')
                 ->where('tbl_order.customer_id', $user->id)
@@ -266,7 +268,9 @@ class BillingController extends Controller
                 'no_invoice' => $invoice->no_proforma_invoice,
                 'tanggal_invoice' => $invoice->tanggal_proforma,
                 'bukti_ppn' => $bukti_ppn,
-                'popup' => $popup ? 1 : 0
+                'popup' => $popup ? 1 : 0,
+                'is_clicked' => $billing->is_clicked,
+                'payment_url'=> $billing->payment_url,
             ];
 
             return $this->generateResponse('success', 'Data billing berhasil diambil', $data);

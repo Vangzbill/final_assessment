@@ -20,6 +20,8 @@ class BillingRevenue extends Model
         'jatuh_tempo',
         'status',
         'bukti_ppn',
+        'is_clicked',
+        'payment_url'
     ];
 
     public $timestamps = false;
