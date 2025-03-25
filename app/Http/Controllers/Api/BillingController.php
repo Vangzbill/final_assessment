@@ -100,15 +100,15 @@ class BillingController extends Controller
                 }
             }
 
-            if ($request->filled('simply') && $request->simply !== 'all') {
+            if ($request->filled('simply') && $request->simply !== 'semua') {
                 [$month, $year] = explode('-', $request->simply);
                 $month = (int) $month;
                 $year = (int) $year;
 
-                $query->whereBetween('tbl_billing_revenue.jatuh_tempo', [
-                    "$year-$month-01",
-                    "$year-$month-31"
-                ]);
+                $startDate = Carbon::create($year, $month, 1)->startOfMonth()->toDateString();
+                $endDate = Carbon::create($year, $month, 1)->endOfMonth()->toDateString();
+
+                $query->whereBetween('tbl_billing_revenue.jatuh_tempo', [$startDate, $endDate]);
             }
 
             if ($request->filled('search')) {

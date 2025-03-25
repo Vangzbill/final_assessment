@@ -281,6 +281,12 @@ class Order extends Model
             $total_keseluruhan = $order->total_harga;
         }
 
+        $biaya_perangkat = optional($order->proforma_invoice_item->first()->produk)->harga_produk;
+        $biaya_layanan = optional($order->layanan)->harga_layanan;
+        $ppn = $order->proforma_invoice_item->sum('nilai_ppn');
+
+        $total_biaya = $biaya_perangkat + $biaya_layanan + $ppn + 16000;
+
         if ($order) {
             return [
                 'id' => $order->id,
@@ -292,7 +298,7 @@ class Order extends Model
                 'no_telp_cp' => optional($order->cp_customer)->no_telp,
                 'biaya_asuransi' => 16000,
                 'harga_perangkat' => optional($order->proforma_invoice_item->first()->produk)->harga_produk,
-                'total_biaya' => optional($order->proforma_invoice_item->first()->produk)->harga_produk + 16000,
+                'total_biaya' => $total_biaya,
                 'ppn' => $order->proforma_invoice_item->sum('nilai_ppn'),
                 'deposit_layanan' => optional($order->layanan)->harga_layanan,
                 'total_keseluruhan' => $total_keseluruhan,
@@ -511,6 +517,12 @@ class Order extends Model
             $total_keseluruhan = $order->total_harga;
         }
 
+        $biaya_perangkat = optional($order->proforma_invoice_item->first()->produk)->harga_produk;
+        $biaya_layanan = optional($order->layanan)->harga_layanan;
+        $ppn = $order->proforma_invoice_item->sum('nilai_ppn');
+
+        $total_biaya = $biaya_perangkat + $biaya_layanan + $ppn + 16000;
+
         $data = [
             'order_id' => $order->id,
             'unique_order' => $order->unique_order,
@@ -531,7 +543,7 @@ class Order extends Model
                 'deposit_layanan' => optional($order->layanan)->harga_layanan,
                 'biaya_asuransi' => 16000,
                 'harga_perangkat' => optional($order->proforma_invoice_item->first()->produk)->harga_produk,
-                'total_biaya' => optional($order->proforma_invoice_item->first()->produk)->harga_produk + 16000,
+                'total_biaya' => $total_biaya,
                 'ppn' => $order->proforma_invoice_item->sum('nilai_ppn'),
                 'total_keseluruhan' => $total_keseluruhan,
             ]
