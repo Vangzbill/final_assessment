@@ -84,7 +84,7 @@ class Payment extends Model
         }
     }
 
-    public static function paymentBillingMidtrans($billing_id, $user_id)
+    public static function paymentBillingMidtrans($billing_id, $user)
     {
         try {
             $server_key = env('MIDTRANS_SERVER_KEY');
@@ -98,11 +98,11 @@ class Payment extends Model
             $order = Order::find($order_id);
             $m_layanan_id = $order->layanan_id;
             $layanan = Service::find($m_layanan_id);
-            $m_customer_id = $user_id;
+            $m_customer_id = $user->id;
             $customer = Customer::find($m_customer_id);
             $data_order = [
                 'transaction_details' => [
-                    'order_id' => $billing_id,
+                    'order_id' => 'BILLING'.$billing_id,
                     'gross_amount' => $gross_amount,
                 ],
                 'item_details' => [
@@ -114,15 +114,15 @@ class Payment extends Model
                     ]
                 ],
                 'customer_details' => [
-                    'first_name' => $customer->first()->nama_perusahaan,
+                    'first_name' => $customer->nama_perusahaan,
                     'last_name' => '-',
-                    'email' => $customer->first()->email_perusahaan,
-                    'phone' => $customer->first()->no_telp_perusahaan,
+                    'email' => $customer->email_perusahaan,
+                    'phone' => $customer->no_telp_perusahaan,
                 ],
                 'callbacks' => [
                     'finish' => route('billing.finish', [
                         'billing_id' => $billing_id,
-                        'token' => JWTAuth::fromUser($customer->first())
+                        'token' => JWTAuth::fromUser($user)
                     ]),
                     'notification' => route('payment.notification'),
                 ]
@@ -150,7 +150,7 @@ class Payment extends Model
         } catch (Exception $e) {
             Log::error('Error occurred while retrieving Snap token: ' . $e->getMessage(), [
                 'billing_id' => $billing_id,
-                'user_id' => $user_id,
+                'user_id' => $user,
             ]);
             return null;
         }
