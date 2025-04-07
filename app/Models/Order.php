@@ -125,7 +125,7 @@ class Order extends Model
                 'provinsi' => $request['provinsi'] ? $request['provinsi'] : null,
                 'kabupaten' => $request['kabupaten'] ? $request['kabupaten'] : null,
                 'alamat_lengkap' => $request['alamat_lengkap'] ? $request['alamat_lengkap'] : null,
-                'nomor_resi' => $request['jenis_pengiriman'] == 'JNE' ? 'CM69624677932' : null,
+                'nomor_resi' => $request['jenis_pengiriman'] == 'JNE' ? '0868332400000053' : null,
             ]);
 
             $riwayat_order = OrderStatusHistory::create([
@@ -594,18 +594,21 @@ class Order extends Model
         $username = env('USERNAME_JNE');
         $api_key = env('API_KEY_JNE');
 
-        $response = Http::asForm()->post($url_jne . 'list/v1/cnote/' . $resi, [
+        $response = Http::withOptions(['verify' => false])
+        ->asForm()
+        ->withHeaders([
+            'Accept' => 'application/json',
+        ])
+        ->post($url_jne . 'list/v1/cnote/' . $resi, [
             'username' => $username,
             'api_key' => $api_key,
         ]);
-
         if ($response->successful()) {
             $tracking = response()->json($response->json());
             $detail = $tracking->getData()->history;
 
             return $detail;
         } else {
-            // dd($response->json());
             return response()->json($response->json(), 400);
         }
     }

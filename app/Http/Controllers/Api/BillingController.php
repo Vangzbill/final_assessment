@@ -170,6 +170,7 @@ class BillingController extends Controller
                 ->where('tbl_billing_revenue.status', 'Unpaid')
                 ->orWhere('tbl_billing_revenue.bukti_ppn', null)
                 ->orderBy('tbl_billing_revenue.jatuh_tempo', 'asc')
+                ->where('tbl_order.nama_node', '!=', null)
                 ->limit(1)->get();
 
             $data = [];
