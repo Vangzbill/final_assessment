@@ -1,73 +1,50 @@
-# Set base image
-FROM php:8.2-apache
-
-# Set working directory
-WORKDIR /var/www/html
+# Gunakan base image resmi PHP
+FROM php:8.3-fpm
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
+    build-essential \
     libpng-dev \
-    zlib1g-dev \
-    libxml2-dev \
-    libzip-dev \
+    libjpeg-dev \
     libonig-dev \
+    libxml2-dev \
     zip \
-    curl \
     unzip \
-    libpq-dev \
-    libldap2-dev  \
-    && docker-php-ext-configure gd \
-    && docker-php-ext-install -j$(nproc) gd \
-    && docker-php-ext-install pdo_mysql \
-    # && docker-php-ext-install mysqli \
-    && docker-php-ext-install pdo_pgsql \
-    # && docker-php-ext-install pgsql \
-    && docker-php-ext-install zip \
-    && docker-php-ext-install ldap \
-    && docker-php-source delete
+    git \
+    curl \
+    libzip-dev \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libwebp-dev \
+    libxpm-dev \
+    libvpx-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install pdo_mysql zip gd
 
-# Install nodejs v18 LTS
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-RUN apt-get update && apt-get install nodejs -y
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Install composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-# RUN curl -sS https://getcomposer.org/installer | php -- --version=2.7.6 --install-dir=/usr/local/bin --filename=composer
+# Set working directory
+WORKDIR /var/www
 
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Copy project files
+COPY . .
 
-# Enable apache module
-RUN a2enmod rewrite
+# Install Laravel dependencies
+RUN composer install --no-dev --optimize-autoloader
 
-# # Copy project
-# COPY . .
+# Copy default nginx config
+COPY docker/nginx.conf /etc/nginx/nginx.conf
+COPY docker/default.conf /etc/nginx/conf.d/default.conf
 
-# # Remove dependency folder
-# RUN if [ -d node_modules ]; then rm -Rf node_modules; fi
-# RUN if [ -d vendor ]; then rm -Rf vendor; fi
+# Copy supervisord config
+COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# # Setup permission
-# RUN chown -R www-data:www-data /var/www
-# RUN chmod -R g+w /var/www
-
-# Update dependency
-RUN composer update
-RUN npm install
-
-# Storage link
-RUN if [ -d public/storage ]; then rm -Rf public/storage; fi
-RUN php artisan storage:link
-
-# Migrate Database
-#RUN php artisan migrate
-
-# Setup permission for cache and storage
-RUN chown -R www-data:www-data bootstrap/cache/ storage/
-RUN chmod -R 775 bootstrap/cache/ storage/
-
-# Set default user
-USER www-data
+# Set permissions
+RUN chown -R www-data:www-data /var/www && chmod -R 755 /var/www
 
 # Expose port
-EXPOSE 8000
+EXPOSE 80
+
+# Jalankan supervisor untuk Nginx + PHP-FPM
+CMD ["/usr/bin/supervisord"]

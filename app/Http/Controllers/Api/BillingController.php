@@ -100,7 +100,7 @@ class BillingController extends Controller
                 }
             }
 
-            if ($request->filled('simply') && $request->simply !== 'semua') {
+            if ($request->filled('simply') && $request->simply !== 'all') {
                 [$month, $year] = explode('-', $request->simply);
                 $month = (int) $month;
                 $year = (int) $year;
