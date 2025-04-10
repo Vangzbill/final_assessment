@@ -66,8 +66,11 @@ COPY . .
 
 # Install Laravel dependencies
 RUN composer install --no-dev --optimize-autoloader \
-    && php artisan cache:clear \
-    && php artisan config:clear
+    && php artisan cache:clear || true \
+    && php artisan config:clear || true \
+    && php artisan view:cache \
+    && php artisan route:clear
+
 
 # Install Octane with Swoole
 RUN composer require laravel/octane \
