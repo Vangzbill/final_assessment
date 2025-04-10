@@ -55,7 +55,9 @@ RUN apt-get update && apt-get install -y \
     git curl unzip libzip-dev libpng-dev libjpeg-dev libonig-dev libxml2-dev \
     libfreetype6-dev libjpeg62-turbo-dev libwebp-dev libxpm-dev libvpx-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
-    && docker-php-ext-install pdo_mysql zip gd sockets pcntl
+    && docker-php-ext-install pdo_mysql zip gd sockets pcntl \
+    && pecl install swoole \
+    && docker-php-ext-enable swoole
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -78,4 +80,4 @@ RUN composer require laravel/octane \
 
 EXPOSE 8000
 
-CMD php artisan octane:start --server=swoole --host=0.0.0.0 --port=${PORT}
+CMD php artisan octane:start --server=swoole --host=0.0.0.0 --port=8000
