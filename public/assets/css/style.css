@@ -124,3 +124,7 @@ button.btn-chatbot {
 button.btn-chatbot:hover {
     background-color: #0056b3;
 }
+
+#mainNavbar {
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}

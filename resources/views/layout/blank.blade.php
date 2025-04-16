@@ -34,4 +34,7 @@
 </body>
 
 @include('components.helpdesk-modal')
+@include('components.button-chatbot')
+@include('components.card-chatbot')
+
 </html>

@@ -112,48 +112,69 @@ $(document).ready(function () {
         }
     });
 
-    let chatMessages = $("#chatMessages");
+    $('#chatbot-toggle').on('click', function () {
+        $('#chatbot-card').toggle();
+    });
 
-    function addMessage(sender, message, isBot = false) {
-        let messageElement = $("<div>").addClass("message").text(message);
+    $('#chatbot-close').on('click', function () {
+        $('#chatbot-card').hide();
+    });
 
-        if (isBot) {
-            messageElement.addClass("bot");
-        } else {
-            messageElement.addClass("user");
-        }
+    $('#chatbot-send').on('click', function () {
+        const message = $('#chatbot-input').val().trim();
+        if (!message) return;
 
-        chatMessages.append(messageElement);
-        chatMessages.scrollTop(chatMessages[0].scrollHeight);
+        addMessage("Kamu", message, false);
+        $('#chatbot-input').val('');
+
+        $.ajax({
+            url: "http://127.0.0.1:5000/api/chat",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({ question: message }),
+            success: function (response) {
+                addMessage("Bot", response.answer, true);
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", status, error);
+                addMessage("Bot", "Maaf, terjadi kesalahan saat mendapatkan jawaban!", true);
+            }
+        });
+    });
+
+    function addMessage(sender, message, isBot) {
+        const align = isBot ? 'start' : 'end';
+        const bg = isBot ? 'bg-light' : 'bg-primary text-white';
+        const msg = `
+            <div class="d-flex justify-content-${align} mb-2">
+                <div class="p-2 rounded ${bg}" style="max-width: 80%;">
+                    <small><strong>${sender}:</strong></small><br>
+                    ${message}
+                </div>
+            </div>`;
+        $('#chatbot-messages').append(msg).scrollTop($('#chatbot-messages')[0].scrollHeight);
     }
 
-    addMessage("Bot", "Hallo! Ada yang bisa saya bantu?", true);
+    $('#chatbot-input').on('keypress', function (e) {
+        if (e.which === 13) {
+            $('#chatbot-send').click();
+        }
+    });
 
-    $("#chatForm").submit(function (event) {
-        event.preventDefault();
-        let input = $("#chatInput");
-        let message = input.val().trim();
-
-        if (message) {
-            addMessage("You", message, false);
-
-            $.ajax({
-                url: "http://127.0.0.1:5000/api/chat",
-                type: "POST",
-                contentType: "application/json",
-                data: JSON.stringify({
-                    question: message,
-                }),
-                success: function(response) {
-                    addMessage("Bot", response.answer, true);
-                },
-                error: function(xhr, status, error) {
-                    console.error("Error:", status, error);
-                    addMessage("Bot", "Maaf, terjadi kesalahan saat mendapatkan jawaban!", true);
-                }
+    $(window).on("scroll", function () {
+        const navbar = $("#mainNavbar");
+        if ($(this).scrollTop() > 10) {
+            navbar.css({
+                "background-color": "rgba(0, 123, 255, 0.8)",
+                "backdrop-filter": "blur(6px)",
+                "box-shadow": "0 2px 6px rgba(0, 0, 0, 0.1)"
             });
-
-            input.val("");
+        } else {
+            navbar.css({
+                "background-color": "transparent",
+                "box-shadow": "none",
+                "backdrop-filter": "none"
+            });
         }
     });
 
