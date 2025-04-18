@@ -114,17 +114,25 @@ $(document).ready(function () {
 
     $('#chatbot-toggle').on('click', function () {
         $('#chatbot-card').toggle();
+
+        const icon = $('#chatbot-toggle .toggle-icon');
+        if ($('#chatbot-card').is(':visible')) {
+            icon.removeClass('bi-chat-dots').addClass('bi-x');
+        } else {
+            icon.removeClass('bi-x').addClass('bi-chat-dots');
+        }
     });
 
     $('#chatbot-close').on('click', function () {
         $('#chatbot-card').hide();
+        $('#chatbot-toggle .toggle-icon').removeClass('bi-x').addClass('bi-chat-dots');
     });
 
     $('#chatbot-send').on('click', function () {
         const message = $('#chatbot-input').val().trim();
         if (!message) return;
 
-        addMessage("Kamu", message, false);
+        addMessage(message, false);
         $('#chatbot-input').val('');
 
         $.ajax({
@@ -133,22 +141,20 @@ $(document).ready(function () {
             contentType: "application/json",
             data: JSON.stringify({ question: message }),
             success: function (response) {
-                addMessage("Bot", response.answer, true);
+                addMessage(response.answer, true);
             },
             error: function (xhr, status, error) {
                 console.error("Error:", status, error);
-                addMessage("Bot", "Maaf, terjadi kesalahan saat mendapatkan jawaban!", true);
+                addMessage("Maaf, terjadi kesalahan saat mendapatkan jawaban!", true);
             }
         });
     });
 
-    function addMessage(sender, message, isBot) {
-        const align = isBot ? 'start' : 'end';
-        const bg = isBot ? 'bg-light' : 'bg-primary text-white';
+    function addMessage(message, isBot) {
+        const bubbleClass = isBot ? 'bot-message' : 'user-message';
         const msg = `
-            <div class="d-flex justify-content-${align} mb-2">
-                <div class="p-2 rounded ${bg}" style="max-width: 80%;">
-                    <small><strong>${sender}:</strong></small><br>
+            <div class="d-flex ${isBot ? 'justify-content-start' : 'justify-content-end'} mb-3">
+                <div class="chat-bubble ${bubbleClass}">
                     ${message}
                 </div>
             </div>`;

@@ -130,11 +130,14 @@ button.btn-chatbot:hover {
 }
 
 #chatbot-toggle button {
-    border-radius: 50px;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
     background-color: #0d6efd;
-    padding: 12px 20px;
-    font-weight: 500;
     transition: all 0.3s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #chatbot-toggle button:hover {
@@ -157,3 +160,24 @@ button.btn-chatbot:hover {
         transform: translateY(0);
     }
 }
+
+.chat-bubble {
+    padding: 10px 15px;
+    border-radius: 20px;
+    max-width: 80%;
+    word-wrap: break-word;
+    font-size: small;
+}
+
+.bot-message {
+    background-color: #f1f1f1;
+    color: #333;
+    border-top-left-radius: 0;
+}
+
+.user-message {
+    background-color: #0d6efd;
+    color: white;
+    border-top-right-radius: 0;
+}
+
