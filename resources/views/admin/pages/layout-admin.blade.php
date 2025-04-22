@@ -5,14 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Page</title>
-    <link rel="stylesheet" href="{{asset('dist/assets/compiled/css/app.css')}}">
-    <link rel="stylesheet" href="{{asset("dist/assets/compiled/css/app-dark.css")}}">
+    <link rel="stylesheet" href="{{ secure_asset('dist/assets/compiled/css/app.css') }}">
+    <link rel="stylesheet" href="{{ secure_asset('dist/assets/compiled/css/app-dark.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.11.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
 <body>
-    <script src="{{asset('dist/assets/static/js/initTheme.js')}}"></script>
+    <script src="{{ secure_asset('dist/assets/static/js/initTheme.js') }}"></script>
     <div id="app">
         <div id="sidebar">
             <div class="sidebar-wrapper active">
@@ -72,10 +73,10 @@
             @include('admin.components.footer')
         </div>
     </div>
-    <script src="{{asset('dist/assets/static/js/components/dark.js')}}"></script>
-    <script src="{{asset('dist/assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js')}}"></script>
+    <script src="{{ secure_asset('dist/assets/static/js/components/dark.js') }}"></script>
+    <script src="{{ secure_asset('dist/assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js') }}"></script>
 
-    <script src="{{asset('dist/assets/compiled/js/app.js')}}"></script>
+    <script src="{{ secure_asset('dist/assets/compiled/js/app.js') }}"></script>
     <script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.4/js/dataTables.bootstrap5.min.js"></script>
 

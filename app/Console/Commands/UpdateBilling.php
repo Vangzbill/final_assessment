@@ -34,13 +34,12 @@ class UpdateBilling extends Command
         try {
             DB::beginTransaction();
 
-            $monthOldNodelinks = KontrakNodelink::whereDate('created_date', '>=', Carbon::now()->subMonth())
-                ->whereNotExists(function ($query) {
-                    $query->select(DB::raw(1))
-                          ->from('tbl_billing_revenue')
-                          ->whereRaw('tbl_billing_revenue.kontrak_nodelink_id = tbl_kontrak_nodelink.id');
+            $monthOldNodelinks = BillingRevenue::with(['order'])->where('status', 'Paid')
+                ->where('jatuh_tempo', '<=', Carbon::now()->endOfMonth())
+                ->whereNotNull('bukti_ppn')
+                ->whereHas('order', function ($query) {
+                    $query->whereNotNull(('nama_node'));
                 })
-                ->with(['kontrak_layanan', 'kontrak_layanan.kontrak', 'kontrak_layanan.kontrak.order'])
                 ->get();
 
             $count = 0;
@@ -51,21 +50,21 @@ class UpdateBilling extends Command
                 // })->exists();
 
                 // if (!$existingBilling) {
-                    $ppn = round($nodelink->total_biaya * 0.11);
-                    $totalAkhir = $nodelink->total_biaya + $ppn;
+                $ppn = round($nodelink->total_biaya * 0.11);
+                $totalAkhir = $nodelink->total_biaya + $ppn;
 
-                    BillingRevenue::create([
-                        'kontrak_nodelink_id' => $nodelink->id,
-                        'order_id' => $nodelink->kontrak_layanan->kontrak->order_id,
-                        'tanggal_tagih' => Carbon::now()->startOfMonth(),
-                        'total_tagihan' => $nodelink->total_biaya,
-                        'total_ppn' => $ppn,
-                        'total_akhir' => $totalAkhir,
-                        'jatuh_tempo' => Carbon::now()->endOfMonth(),
-                        'status' => 'Unpaid'
-                    ]);
+                BillingRevenue::create([
+                    'kontrak_nodelink_id' => $nodelink->id,
+                    'order_id' => $nodelink->kontrak_layanan->kontrak->order_id,
+                    'tanggal_tagih' => Carbon::now()->startOfMonth(),
+                    'total_tagihan' => $nodelink->total_biaya,
+                    'total_ppn' => $ppn,
+                    'total_akhir' => $totalAkhir,
+                    'jatuh_tempo' => Carbon::now()->endOfMonth(),
+                    'status' => 'Unpaid'
+                ]);
 
-                    $count++;
+                $count++;
                 // }
             }
 
@@ -74,7 +73,6 @@ class UpdateBilling extends Command
             $message = "Berhasil membuat {$count} billing revenue baru";
             Log::info($message);
             $this->info($message);
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("Error saat membuat billing revenue: " . $e->getMessage());

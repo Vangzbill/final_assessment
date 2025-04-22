@@ -25,7 +25,8 @@ class OrderController extends Controller
     {
         if ($request->ajax()) {
             $orders = Order::with(['produk', 'layanan', 'order_status_history.status', 'cp_customer', 'customer'])
-                ->select('tbl_order.*');
+                ->select('tbl_order.*')
+                ->orderBy('tbl_order.id', 'desc'); // Default order by order.id
 
             if ($request->has('order')) {
                 $columns = [

@@ -21,6 +21,9 @@
         <section class="section">
             <div class="card">
                 <div class="card-body table-responsive">
+                    <button id="generateBillingBtn" class="btn btn-primary mb-3 ">
+                        <i class="bi bi-arrow-repeat"></i> Generate Billing
+                    </button>
                     <table class="table table-striped" id="table1">
                         <thead>
                             <tr>
@@ -45,12 +48,13 @@
     @include('admin.pages.billing.modal')
 
     <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function() {
             let table = $('#table1').DataTable({
                 processing: true,
                 serverSide: true,
-                ajax: "{{ route('admin.billing') }}",
+                ajax: "{{ secure_url('/admin/tagihan') }}",
                 columns: [{
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex',
@@ -130,6 +134,45 @@
                     },
                     error: function() {
                         alert("Gagal mengambil data tagihan.");
+                    }
+                });
+            });
+
+            $('#generateBillingBtn').click(function() {
+                Swal.fire({
+                    title: 'Generate Billing?',
+                    text: "Billing akan dibuat untuk kontrak node-link yang belum ditagihkan.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, generate!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "/admin/generate-billing",
+                            type: "POST",
+                            dataType: "json",
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
+                            success: function(response) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: response.message
+                                });
+                                $('#table1').DataTable().ajax.reload();
+                            },
+                            error: function(xhr) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: 'Terjadi kesalahan saat generate billing.'
+                                });
+                            }
+                        });
                     }
                 });
             });

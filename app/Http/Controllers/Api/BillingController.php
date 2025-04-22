@@ -271,7 +271,7 @@ class BillingController extends Controller
                 'bukti_ppn' => $bukti_ppn,
                 'popup' => $popup ? 1 : 0,
                 'is_clicked' => $billing->is_clicked,
-                'payment_url'=> $billing->payment_url,
+                'payment_url' => $billing->payment_url,
             ];
 
             return $this->generateResponse('success', 'Data billing berhasil diambil', $data);

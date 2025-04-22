@@ -28,10 +28,11 @@ Route::middleware('add.ngrok.header')->group(function () {
 
     Route::prefix('admin')->group(function () {
         Route::get('/', [HomeController::class, 'adminLogin'])->name('admin.login');
-        Route::get('pesanan', [OrderController::class,'index'])->name('admin.order');
+        Route::get('pesanan', [OrderController::class, 'index'])->name('admin.order');
         Route::get('pesanan/update-status/{id}', [OrderController::class, 'updateStatus'])->name('admin.order.update-status');
         Route::get('pesanan/{id}', [OrderController::class, 'show'])->name('admin.order.show');
         Route::get('tagihan', [BillingController::class, 'index'])->name('admin.billing');
         Route::get('billing/{id}', [BillingController::class, 'show'])->name('admin.billing.show');
+        Route::post('generate-billing', [BillingController::class, 'generateBilling'])->name('admin.generate-billing');
     });
 });
