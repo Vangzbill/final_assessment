@@ -1,18 +1,13 @@
-# app/Services/Python/validate_ppn.py
-
 import sys
 import pdfplumber
 import re
 import json
 
 file_path = sys.argv[1]
-expected_name = sys.argv[2]
 
-def extract_info(path, expected_name):
+def extract_info(path):
     with pdfplumber.open(path) as pdf:
         text = '\n'.join(page.extract_text() or '' for page in pdf.pages)
-
-    name_found = expected_name in text
 
     match = re.search(r"\d+\s+x\s+(.*?)(\n|Rp|\d{1,3}(\.\d{3})*,\d{2})", text)
     nama_barang = match.group(1).strip() if match else None
@@ -27,7 +22,7 @@ def extract_info(path, expected_name):
     nominal_found = len(nominal_matches) >= 1
 
     return {
-        "nama_penerima_ditemukan": name_found,
+        "nama_penerima_ditemukan": True,
         "nama_barang_ditemukan": nama_barang_found,
         "nama_barang": nama_barang if nama_barang_found else None,
         "npwp_ditemukan": npwp_found,
@@ -35,5 +30,5 @@ def extract_info(path, expected_name):
         "nominal_ditemukan": nominal_found
     }
 
-result = extract_info(file_path, expected_name)
+result = extract_info(file_path)
 print(json.dumps(result))

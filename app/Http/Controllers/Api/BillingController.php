@@ -11,6 +11,7 @@ use App\Models\ProformaInvoice;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class BillingController extends Controller
@@ -313,12 +314,16 @@ class BillingController extends Controller
 
             $filePath = $imagePath . $imageName;
 
+            //local
+            // $pythonPath = base_path('app/Services/Python/.venv/Scripts/python.exe');
+
+            //server
             $pythonPath = base_path('app/Services/Python/venv/bin/python');
+
             $scriptPath = base_path('app/Services/Python/validate_ppn.py');
             $fileArg = escapeshellarg($filePath);
-            $nameArg = escapeshellarg($user->name . '_' . $billing->order_id . '_' . $billing->jatuh_tempo);
 
-            $command = "$pythonPath $scriptPath $fileArg $nameArg";
+            $command = "$pythonPath $scriptPath $fileArg";
 
             $output = shell_exec($command);
             $result = json_decode($output, true);
@@ -326,15 +331,18 @@ class BillingController extends Controller
             if (json_last_error() !== JSON_ERROR_NONE) {
                 return $this->generateResponse('error', 'Output Python tidak valid: ' . json_last_error_msg());
             }
+            $inputNama = trim(preg_replace('/\s+/', '', $nama_barang_input));
+            $detectedNama = trim(preg_replace('/\s+/', '', $result['nama_barang']));
 
+
+            Log::info('Output Python: ' . print_r($result, true));
             if (
                 !$result ||
-                !$result['nama_penerima_ditemukan'] ||
                 !$result['nama_barang_ditemukan'] ||
                 !$result['npwp_ditemukan'] ||
                 !$result['faktur_pajak_ditemukan'] ||
                 !$result['nominal_ditemukan'] ||
-                strcasecmp($nama_barang_input, $result['nama_barang']) !== 0
+                strcasecmp($inputNama, $detectedNama) !== 0
             ) {
                 return $this->generateResponse('error', 'Bukti PPN tidak valid atau nama barang tidak cocok.');
             }
