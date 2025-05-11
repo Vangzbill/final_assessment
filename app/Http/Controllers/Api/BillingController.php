@@ -312,15 +312,21 @@ class BillingController extends Controller
             $bukti_ppn->move($imagePath, $imageName);
 
             $filePath = $imagePath . $imageName;
-            $expectedName = escapeshellarg($user->name) . '_' . escapeshellarg($billing->order_id) . '_' . escapeshellarg($billing->jatuh_tempo);
 
+            $pythonPath = base_path('app/Services/Python/venv/bin/python');
             $scriptPath = base_path('app/Services/Python/validate_ppn.py');
-            $command = "python3 $scriptPath" . escapeshellarg($filePath) . ' ' . $expectedName;
+            $fileArg = escapeshellarg($filePath);
+            $nameArg = escapeshellarg($user->name . '_' . $billing->order_id . '_' . $billing->jatuh_tempo);
+
+            $command = "$pythonPath $scriptPath $fileArg $nameArg";
 
             $output = shell_exec($command);
-            dd($output);
             $result = json_decode($output, true);
-            dd($result);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return $this->generateResponse('error', 'Output Python tidak valid: ' . json_last_error_msg());
+            }
+
             if (
                 !$result ||
                 !$result['nama_penerima_ditemukan'] ||
