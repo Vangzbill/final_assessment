@@ -1,7 +1,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <nav id="mainNavbar" class="navbar navbar-expand-lg fixed-top">
     <div class="container">
-        <img src="{{ secure_asset('assets/images/logo_dark.png') }}" alt="logo" class="me-3"
+        <img src="{{ asset('assets/images/logo_dark.png') }}" alt="logo" class="me-3"
             style="width: 40px; max-height: 40px;">
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
             aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">

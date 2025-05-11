@@ -226,8 +226,10 @@ class BillingController extends Controller
                 'tbl_billing_revenue.bukti_ppn as bukti_ppn',
                 'tbl_billing_revenue.is_clicked',
                 'tbl_billing_revenue.payment_url',
+                'tbl_produk.nama_produk as nama_barang',
             ])
                 ->join('tbl_order', 'tbl_billing_revenue.order_id', '=', 'tbl_order.id')
+                ->leftJoin('tbl_produk', 'tbl_order.produk_id', '=', 'tbl_produk.id')
                 ->where('tbl_order.customer_id', $user->id)
                 ->where('tbl_billing_revenue.id', $id)
                 ->first();
@@ -259,6 +261,7 @@ class BillingController extends Controller
                 'order_sid' => $billing->order_sid,
                 'order_unique' => $billing->order_unique,
                 'nama_node' => $nodelink->nama_node,
+                'nama_barang' => $billing->nama_barang,
                 'alamat_node' => $nodelink->alamat_node,
                 'nominal' => $billing->nominal,
                 'jatuh_tempo' => $billing->jatuh_tempo,
@@ -290,9 +293,11 @@ class BillingController extends Controller
 
             $billing_id = $request->billing_id;
             $bukti_ppn = $request->file('bukti_ppn');
+            $nama_barang_input = $request->nama_barang;
 
             $request->validate([
-                'bukti_ppn' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+                'bukti_ppn' => 'required|file|mimes:pdf|max:2048',
+                'nama_barang' => 'required|string|max:255',
             ]);
 
             DB::beginTransaction();
@@ -305,6 +310,28 @@ class BillingController extends Controller
             $imagePath = storage_path('app/public/');
             $imageName = 'bukti_ppn_' . $billing_id . '.' . $bukti_ppn->getClientOriginalExtension();
             $bukti_ppn->move($imagePath, $imageName);
+
+            $filePath = $imagePath . $imageName;
+            $expectedName = escapeshellarg($user->name) . '_' . escapeshellarg($billing->order_id) . '_' . escapeshellarg($billing->jatuh_tempo);
+
+            $scriptPath = base_path('app/Services/Python/validate_ppn.py');
+            $command = "python3 $scriptPath" . escapeshellarg($filePath) . ' ' . $expectedName;
+
+            $output = shell_exec($command);
+            dd($output);
+            $result = json_decode($output, true);
+            dd($result);
+            if (
+                !$result ||
+                !$result['nama_penerima_ditemukan'] ||
+                !$result['nama_barang_ditemukan'] ||
+                !$result['npwp_ditemukan'] ||
+                !$result['faktur_pajak_ditemukan'] ||
+                !$result['nominal_ditemukan'] ||
+                strcasecmp($nama_barang_input, $result['nama_barang']) !== 0
+            ) {
+                return $this->generateResponse('error', 'Bukti PPN tidak valid atau nama barang tidak cocok.');
+            }
 
             $billing->bukti_ppn = $imageName;
             $billing->save();
