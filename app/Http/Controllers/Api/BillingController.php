@@ -11,7 +11,6 @@ use App\Models\ProformaInvoice;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class BillingController extends Controller
@@ -227,10 +226,8 @@ class BillingController extends Controller
                 'tbl_billing_revenue.bukti_ppn as bukti_ppn',
                 'tbl_billing_revenue.is_clicked',
                 'tbl_billing_revenue.payment_url',
-                'tbl_produk.nama_produk as nama_barang',
             ])
                 ->join('tbl_order', 'tbl_billing_revenue.order_id', '=', 'tbl_order.id')
-                ->leftJoin('tbl_produk', 'tbl_order.produk_id', '=', 'tbl_produk.id')
                 ->where('tbl_order.customer_id', $user->id)
                 ->where('tbl_billing_revenue.id', $id)
                 ->first();
@@ -262,7 +259,6 @@ class BillingController extends Controller
                 'order_sid' => $billing->order_sid,
                 'order_unique' => $billing->order_unique,
                 'nama_node' => $nodelink->nama_node,
-                'nama_barang' => $billing->nama_barang,
                 'alamat_node' => $nodelink->alamat_node,
                 'nominal' => $billing->nominal,
                 'jatuh_tempo' => $billing->jatuh_tempo,
@@ -294,11 +290,9 @@ class BillingController extends Controller
 
             $billing_id = $request->billing_id;
             $bukti_ppn = $request->file('bukti_ppn');
-            $nama_barang_input = $request->nama_barang;
 
             $request->validate([
-                'bukti_ppn' => 'required|file|mimes:pdf|max:2048',
-                'nama_barang' => 'required|string|max:255',
+                'bukti_ppn' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
             ]);
 
             DB::beginTransaction();
@@ -311,41 +305,6 @@ class BillingController extends Controller
             $imagePath = storage_path('app/public/');
             $imageName = 'bukti_ppn_' . $billing_id . '.' . $bukti_ppn->getClientOriginalExtension();
             $bukti_ppn->move($imagePath, $imageName);
-
-            $filePath = $imagePath . $imageName;
-
-            //local
-            // $pythonPath = base_path('app/Services/Python/.venv/Scripts/python.exe');
-
-            //server
-            $pythonPath = base_path('app/Services/Python/venv/bin/python');
-
-            $scriptPath = base_path('app/Services/Python/validate_ppn.py');
-            $fileArg = escapeshellarg($filePath);
-
-            $command = "$pythonPath $scriptPath $fileArg";
-
-            $output = shell_exec($command);
-            $result = json_decode($output, true);
-
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                return $this->generateResponse('error', 'Output Python tidak valid: ' . json_last_error_msg());
-            }
-            $inputNama = trim(preg_replace('/\s+/', '', $nama_barang_input));
-            $detectedNama = trim(preg_replace('/\s+/', '', $result['nama_barang']));
-
-
-            Log::info('Output Python: ' . print_r($result, true));
-            if (
-                !$result ||
-                !$result['nama_barang_ditemukan'] ||
-                !$result['npwp_ditemukan'] ||
-                !$result['faktur_pajak_ditemukan'] ||
-                !$result['nominal_ditemukan'] ||
-                strcasecmp($inputNama, $detectedNama) !== 0
-            ) {
-                return $this->generateResponse('error', 'Bukti PPN tidak valid atau nama barang tidak cocok.');
-            }
 
             $billing->bukti_ppn = $imageName;
             $billing->save();
