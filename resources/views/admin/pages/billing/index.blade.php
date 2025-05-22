@@ -34,6 +34,7 @@
                                 <th>Total Tagihan</th>
                                 <th>Status</th>
                                 <th>Jatuh Tempo</th>
+                                <th>Bukti PPN</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -54,7 +55,7 @@
             let table = $('#table1').DataTable({
                 processing: true,
                 serverSide: true,
-                ajax: "{{ secure_url('/admin/tagihan') }}",
+                ajax: "{{ url('/admin/tagihan') }}",
                 columns: [{
                         data: 'DT_RowIndex',
                         name: 'DT_RowIndex',
@@ -98,6 +99,12 @@
                         searchable: true
                     },
                     {
+                        data: 'bukti_ppn',
+                        name: 'bukti_ppn',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
                         data: 'action',
                         name: 'action',
                         orderable: false,
@@ -137,6 +144,92 @@
                     }
                 });
             });
+
+            $(document).on('click', '.terima-btn', function() {
+                var id = $(this).data('id');
+
+                Swal.fire({
+                    title: 'Terima Tagihan?',
+                    text: "Apakah data bukti ppn sudah sesuai?",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Terima',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "/api/billing/accept-ppn",
+                            type: "POST",
+                            dataType: "json",
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
+                            data: {
+                                billing_id: id
+                            },
+                            success: function(response) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: response.message
+                            });
+                                $('#table1').DataTable().ajax.reload();
+                            },
+                            error: function(xhr) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: 'Terjadi kesalahan saat menerima tagihan.'
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+
+
+            $(document).on('click', '.tolak-btn', function() {
+                var id = $(this).data('id');
+
+                Swal.fire({
+                    title: 'Tolak Tagihan?',
+                    text: "Apakah data bukti ppn tidak sesuai?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Tolak',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "/api/billing/reject-ppn",
+                            type: "POST",
+                            dataType: "json",
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                            },
+                            data: {
+                                billing_id: id
+                            },
+                            success: function(response) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: response.message
+                                });
+                                $('#table1').DataTable().ajax.reload();
+                            },
+                            error: function(xhr) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: 'Terjadi kesalahan saat menolak tagihan.'
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+
 
             $('#generateBillingBtn').click(function() {
                 Swal.fire({

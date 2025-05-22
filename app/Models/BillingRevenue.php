@@ -21,7 +21,9 @@ class BillingRevenue extends Model
         'status',
         'bukti_ppn',
         'is_clicked',
-        'payment_url'
+        'payment_url',
+        'is_lunas',
+        'is_reject',
     ];
 
     public $timestamps = false;

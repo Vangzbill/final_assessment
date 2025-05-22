@@ -74,7 +74,8 @@ class BillingController extends Controller
                 'tbl_billing_revenue.total_akhir as nominal',
                 'tbl_billing_revenue.jatuh_tempo',
                 'tbl_billing_revenue.status',
-                'tbl_billing_revenue.bukti_ppn'
+                'tbl_billing_revenue.bukti_ppn',
+                'tbl_billing_revenue.is_lunas',
             ])
                 ->join('tbl_order', 'tbl_billing_revenue.order_id', '=', 'tbl_order.id')
                 ->where('tbl_order.customer_id', $user->id)
@@ -94,9 +95,9 @@ class BillingController extends Controller
 
             if ($request->filled('pelunasan')) {
                 if ($request->pelunasan === 'paid') {
-                    $query->whereNotNull('tbl_billing_revenue.bukti_ppn');
+                    $query->where('tbl_billing_revenue.is_lunas', 1);
                 } elseif ($request->pelunasan === 'unpaid') {
-                    $query->whereNull('tbl_billing_revenue.bukti_ppn');
+                    $query->where('tbl_billing_revenue.is_lunas', 0);
                 }
             }
 
@@ -226,6 +227,8 @@ class BillingController extends Controller
                 'tbl_billing_revenue.bukti_ppn as bukti_ppn',
                 'tbl_billing_revenue.is_clicked',
                 'tbl_billing_revenue.payment_url',
+                'tbl_billing_revenue.is_lunas',
+                'tbl_billing_revenue.is_reject',
             ])
                 ->join('tbl_order', 'tbl_billing_revenue.order_id', '=', 'tbl_order.id')
                 ->where('tbl_order.customer_id', $user->id)
@@ -272,6 +275,8 @@ class BillingController extends Controller
                 'popup' => $popup ? 1 : 0,
                 'is_clicked' => $billing->is_clicked,
                 'payment_url' => $billing->payment_url,
+                'is_lunas' => $billing->is_lunas,
+                'is_reject' => $billing->is_reject,
             ];
 
             return $this->generateResponse('success', 'Data billing berhasil diambil', $data);
@@ -292,7 +297,7 @@ class BillingController extends Controller
             $bukti_ppn = $request->file('bukti_ppn');
 
             $request->validate([
-                'bukti_ppn' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+                'bukti_ppn' => 'required|file|mimes:pdf|max:2048',
             ]);
 
             DB::beginTransaction();
@@ -307,6 +312,7 @@ class BillingController extends Controller
             $bukti_ppn->move($imagePath, $imageName);
 
             $billing->bukti_ppn = $imageName;
+            $billing->is_reject = 0;
             $billing->save();
             DB::commit();
 
@@ -385,6 +391,66 @@ class BillingController extends Controller
 
             return response()->file($imagePath);
         } catch (\Exception $e) {
+            return $this->generateResponse('error', $e->getMessage());
+        }
+    }
+
+    public function ppnImageAdmin($billingId)
+    {
+        try {
+            $billing = BillingRevenue::find($billingId);
+            if (!$billing) {
+                return $this->generateResponse('error', 'Billing tidak ditemukan');
+            }
+
+            $imagePath = storage_path('app/public/' . $billing->bukti_ppn);
+            if (!file_exists($imagePath)) {
+                return $this->generateResponse('error', 'Bukti PPN tidak ditemukan');
+            }
+
+            return response()->file($imagePath);
+        } catch (\Exception $e) {
+            return $this->generateResponse('error', $e->getMessage());
+        }
+    }
+
+    public function acceptPpn(Request $request)
+    {
+        try {
+            $billing = BillingRevenue::find($request->billing_id);
+            if (!$billing) {
+                return $this->generateResponse('error', 'Billing tidak ditemukan');
+            }
+
+            DB::beginTransaction();
+            $billing->is_lunas = 1;
+            $billing->save();
+            DB::commit();
+
+            return $this->generateResponse('success', 'Bukti PPN diterima, pembayaran lunas');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->generateResponse('error', $e->getMessage());
+        }
+    }
+
+    public function rejectPpn(Request $request)
+    {
+        try {
+            $billing = BillingRevenue::find($request->billing_id);
+            if (!$billing) {
+                return $this->generateResponse('error', 'Billing tidak ditemukan');
+            }
+
+            DB::beginTransaction();
+            $billing->is_lunas = 0;
+            $billing->is_reject = 1;
+            $billing->save();
+            DB::commit();
+
+            return $this->generateResponse('success', 'Bukti PPN ditolak, pembayaran belum lunas');
+        } catch (\Exception $e) {
+            DB::rollBack();
             return $this->generateResponse('error', $e->getMessage());
         }
     }

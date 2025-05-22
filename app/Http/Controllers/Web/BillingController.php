@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\BillingRevenue;
-use App\Models\KontrakNodelink;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,9 +22,19 @@ class BillingController extends Controller
 
             return DataTables::of($billing)
                 ->addColumn('action', function ($billing) {
-                    return '<a href="javascript:void(0);" class="btn btn-primary btn-sm view-billing-btn" data-id="' . $billing->id . '">
-                    <i class="bi bi-eye"></i>
-                </a>';
+                    $action = '<a href="javascript:void(0);" class="btn btn-primary btn-sm view-billing-btn" data-id="' . $billing->id . '">
+                    <i class="bi bi-eye"></i></a>';
+
+                    if ($billing->bukti_ppn != null) {
+                        if ($billing->is_lunas == 0 && $billing->is_reject == 0) {
+                            $action .= '
+                            <button class="btn btn-success btn-sm terima-btn" data-id="' . $billing->id . '"><i class="bi bi-check-circle"></i></button>
+                            <button class="btn btn-danger btn-sm tolak-btn" data-id="' . $billing->id . '"><i class="bi bi-x-circle"></i></button>
+                        ';
+                        }
+                    }
+
+                    return $action;
                 })
                 ->addIndexColumn()
                 ->addColumn('unique_order', function ($billing) {
@@ -47,10 +56,10 @@ class BillingController extends Controller
                     if ($billing->status == "Unpaid") {
                         $badgeClass = 'danger';
                         $statusText = 'Belum Dibayar';
-                    } elseif ($billing->status == "Paid" && $billing->bukti_ppn == null) {
+                    } elseif ($billing->status == "Paid" && $billing->is_lunas == 0) {
                         $badgeClass = 'warning';
                         $statusText = 'Belum Lunas';
-                    } elseif ($billing->status == "Paid" && $billing->bukti_ppn != null) {
+                    } elseif ($billing->status == "Paid" && $billing->is_lunas == 1) {
                         $badgeClass = 'success';
                         $statusText = 'Lunas';
                     } elseif ($billing->status == "Paid") {
@@ -63,7 +72,14 @@ class BillingController extends Controller
                 ->addColumn('jatuh_tempo', function ($billing) {
                     return $billing->jatuh_tempo;
                 })
-                ->rawColumns(['action', 'customer', 'status'])
+                ->addColumn('bukti_ppn', function ($billing) {
+                    if ($billing->bukti_ppn) {
+                        $url = url('/api/ppn-image/' . $billing->id);
+                        return '<a href="' . $url . '" target="_blank" class="btn btn-info btn-sm">Preview</a>';
+                    }
+                    return '-';
+                })
+                ->rawColumns(['action', 'customer', 'status', 'total_akhir', 'jatuh_tempo', 'bukti_ppn'])
                 ->filterColumn('unique_order', function ($query, $keyword) {
                     $query->whereHas('order', function ($q) use ($keyword) {
                         $q->where('unique_order', 'like', "%$keyword%");
@@ -93,8 +109,8 @@ class BillingController extends Controller
                     $query->whereRaw("
                     CASE
                         WHEN status = 'Unpaid' THEN 'Belum Dibayar'
-                        WHEN status = 'Paid' AND bukti_ppn IS NULL THEN 'Belum Lunas'
-                        WHEN status = 'Paid' AND bukti_ppn IS NOT NULL THEN 'Lunas'
+                        WHEN status = 'Paid' AND is_lunas = 0 THEN 'Belum Lunas'
+                        WHEN status = 'Paid' AND is_lunas = 1 THEN 'Lunas'
                         ELSE 'Dibayar'
                     END LIKE ?", ["%$keyword%"]);
                 })
@@ -102,8 +118,8 @@ class BillingController extends Controller
                     $query->orderByRaw("
                     CASE
                         WHEN status = 'Unpaid' THEN 1
-                        WHEN status = 'Paid' AND bukti_ppn IS NULL THEN 2
-                        WHEN status = 'Paid' AND bukti_ppn IS NOT NULL THEN 3
+                        WHEN status = 'Paid' AND is_lunas = 0 THEN 2
+                        WHEN status = 'Paid' AND is_lunas = 1 THEN 3
                         ELSE 4
                     END $order");
                 })

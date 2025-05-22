@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 //     return $request->user();
 // })->middleware('auth:sanctum');
 
-Route::middleware('add.ngrok.header')->group(function(){
+Route::middleware('add.ngrok.header')->group(function () {
     Route::prefix('auth')->group(function () {
         Route::post('register', [AuthController::class, 'register']);
         Route::post('login', [AuthController::class, 'login']);
@@ -32,7 +32,7 @@ Route::middleware('add.ngrok.header')->group(function(){
         Route::get('/{id}', [ProductController::class, 'show']);
     });
 
-    Route::prefix('faq')->group(function (){
+    Route::prefix('faq')->group(function () {
         Route::get('{id}', [ProductController::class, 'faqProduct']);
     });
 
@@ -96,6 +96,9 @@ Route::middleware('add.ngrok.header')->group(function(){
         Route::get('month-billing', [BillingController::class, 'monthBilling']);
         Route::get('ppn-image/{id}', [BillingController::class, 'ppnImage']);
     });
+    Route::get('ppn-image/{id}', [BillingController::class, 'ppnImageAdmin']);
+    Route::post('billing/accept-ppn', [BillingController::class, 'acceptPpn']);
+    Route::post('billing/reject-ppn', [BillingController::class, 'rejectPpn']);
 
     Route::middleware('jwt.verify')->prefix('nps')->group(callback: function () {
         Route::post('create', [NpsController::class, 'createNps']);
