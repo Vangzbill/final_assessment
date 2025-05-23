@@ -15,8 +15,8 @@ class Payment extends Model
     public static function paymentGatewayMidtrans($orderId, $user)
     {
         try {
-            $serverKey = env('MIDTRANS_SERVER_KEY');
-            $clientKey = env('MIDTRANS_CLIENT_KEY');
+            $serverKey = config('midtrans.server_key');
+            $clientKey = config('midtrans.client_key');
             Config::$serverKey = $serverKey;
             Config::$clientKey = $clientKey;
             Config::$isProduction = false;
@@ -102,7 +102,7 @@ class Payment extends Model
             $customer = Customer::find($m_customer_id);
             $data_order = [
                 'transaction_details' => [
-                    'order_id' => 'BILLING'.$billing_id,
+                    'order_id' => 'BILLING' . $billing_id,
                     'gross_amount' => $gross_amount,
                 ],
                 'item_details' => [
