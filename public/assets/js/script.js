@@ -36,6 +36,8 @@ $(document).ready(function () {
 
     $("#provinsi_id").change(function () {
         let provinsiId = $(this).val();
+        let namaProvinsi = $("#provinsi_id option:selected").text();
+        $("#nama_provinsi").val(namaProvinsi);
         if (provinsiId) {
             $.ajax({
                 url: `/api/wilayah/kabupaten/${provinsiId}`,
@@ -64,6 +66,8 @@ $(document).ready(function () {
     });
 
     $("#kota_id").change(function () {
+        let namaKota = $("#kota_id option:selected").text();
+        $("#nama_kota").val(namaKota);
         let kabupatenId = $(this).val();
         if (kabupatenId) {
             $.ajax({
@@ -90,6 +94,8 @@ $(document).ready(function () {
     });
 
     $("#kecamatan_id").change(function () {
+        let namaKecamatan = $("#kecamatan_id option:selected").text();
+        $("#nama_kecamatan").val(namaKecamatan);
         let kecamatanId = $(this).val();
         if (kecamatanId) {
             $.ajax({
@@ -110,6 +116,11 @@ $(document).ready(function () {
                 }
             });
         }
+    });
+
+    $("#kelurahan_id").change(function () {
+        let namaKelurahan = $("#kelurahan_id option:selected").text();
+        $("#nama_kelurahan").val(namaKelurahan);
     });
 
     $('#chatbot-toggle').on('click', function () {

@@ -26,6 +26,7 @@ class VerifyJwtToken
             }
 
             Session::put('jwt_token', $token);
+            Session::put('username', JWTAuth::setToken($token)->getPayload()->get('username'));
             $user = JWTAuth::parseToken()->authenticate();
             if (!$user) {
                 return response()->json(['status' => 'User not found'], 404);
@@ -42,5 +43,4 @@ class VerifyJwtToken
 
         return $next($request);
     }
-
 }

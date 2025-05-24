@@ -249,7 +249,7 @@ class BillingController extends Controller
 
             $imagePath = storage_path('app/public/' . $billing->bukti_ppn);
             $bukti_ppn = file_exists($imagePath) && $billing->bukti_ppn
-                ? url('app/public/' . $billing->bukti_ppn)
+                ? url('/api/ppn-image/' . $billing->billing_id)
                 : null;
 
             $popup = Popup::where('customer_id', $user->id)

@@ -53,7 +53,7 @@
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: '{{ secure_url('/admin/pesanan') }}',
+                    url: '{{ url('/admin/pesanan') }}',
                     type: "GET",
                     error: function(xhr, status, error) {
                         console.log("AJAX Error: ", xhr.responseText);

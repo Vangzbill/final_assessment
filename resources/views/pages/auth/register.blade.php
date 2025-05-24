@@ -1,7 +1,7 @@
 @extends('layout.blank')
 @section('content')
     @include('components.navbar')
-    <div class="container"  style="margin-top: -40px;">
+    <div class="container" style="margin-top: -40px;">
         <div class="row pt-5 pe-3 ps-3 mb-5">
             <div class="col-md-12 d-flex justify-content-center align-items-center flex-column">
                 <h1 class="text-center mt-5"
@@ -14,27 +14,31 @@
                     Register
                 </h1>
 
-                <form method="POST" class="mt-5 w-100" style="max-width: 400px;">
+                <form action="{{ route('submit.register') }}" method="POST" class="mt-5 w-100" style="max-width: 400px;">
                     @csrf
 
                     <div class="mb-3">
                         <label for="nama_perusahaan" class="form-label">Nama Perusahaan</label>
-                        <input type="text" class="form-control bg-transparent" id="nama_perusahaan" name="nama_perusahaan" required>
+                        <input type="text" class="form-control bg-transparent" id="nama_perusahaan"
+                            name="nama_perusahaan" required>
                     </div>
 
                     <div class="mb-3">
                         <label for="email_perusahaan" class="form-label">Email Perusahaan</label>
-                        <input type="email" class="form-control bg-transparent" id="email_perusahaan" name="email_perusahaan" required>
+                        <input type="email" class="form-control bg-transparent" id="email_perusahaan"
+                            name="email_perusahaan" required>
                     </div>
 
                     <div class="mb-3">
                         <label for="no_telp_perusahaan" class="form-label">Nomor Telepon Perusahaan</label>
-                        <input type="text" class="form-control bg-transparent" id="no_telp_perusahaan" name="no_telp_perusahaan" required>
+                        <input type="text" class="form-control bg-transparent" id="no_telp_perusahaan"
+                            name="no_telp_perusahaan" required>
                     </div>
 
                     <div class="mb-3">
                         <label for="npwp_perusahaan" class="form-label">NPWP Perusahaan</label>
-                        <input type="text" class="form-control bg-transparent" id="npwp_perusahaan" name="npwp_perusahaan" required>
+                        <input type="text" class="form-control bg-transparent" id="npwp_perusahaan"
+                            name="npwp_perusahaan" required>
                     </div>
 
                     <div class="mb-3">
@@ -45,7 +49,8 @@
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
                         <div class="input-group">
-                            <input type="password" class="form-control bg-transparent" id="password" name="password" required>
+                            <input type="password" class="form-control bg-transparent" id="password" name="password"
+                                required>
                             <button class="btn btn-outline-primary" type="button" id="togglePassword">
                                 <i class="bi bi-eye"></i>
                             </button>
@@ -86,6 +91,10 @@
                             </select>
                         </div>
                     </div>
+                    <input type="hidden" name="nama_provinsi" id="nama_provinsi">
+                    <input type="hidden" name="nama_kota" id="nama_kota">
+                    <input type="hidden" name="nama_kecamatan" id="nama_kecamatan">
+                    <input type="hidden" name="nama_kelurahan" id="nama_kelurahan">
 
                     <button type="submit" class="btn btn-primary w-100">Register</button>
                 </form>
@@ -96,5 +105,4 @@
             </div>
         </div>
     </div>
-
 @endsection

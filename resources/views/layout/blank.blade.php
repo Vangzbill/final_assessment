@@ -29,9 +29,32 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="{{ asset('assets/js/script.js') }}"></script>
     <script>
-        @stack('scripts')
+        @yield('content')
     </script>
 </body>
+
+@if ($errors->any())
+    <script>
+        let message = `{!! implode('<br>', $errors->all()) !!}`;
+        Swal.fire({
+            icon: 'warning',
+            title: 'Validasi Gagal',
+            html: message,
+            confirmButtonColor: '#f0ad4e'
+        });
+    </script>
+@endif
+
+@if (session('success'))
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: '{{ session('success') }}',
+            confirmButtonColor: '#3085d6'
+        });
+    </script>
+@endif
 
 @include('components.helpdesk-modal')
 @include('components.button-chatbot')

@@ -14,7 +14,7 @@
                     Login
                 </h1>
 
-                <form action="{{ route('login') }}" method="POST" class="mt-5 w-100" style="max-width: 400px;">
+                <form action="{{ route('submit.login') }}" method="POST" class="mt-5 w-100" style="max-width: 400px;">
                     @csrf
 
                     <div class="mb-3">
