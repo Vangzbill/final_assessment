@@ -13,10 +13,10 @@
             <span>Tagihan</span>
         </a>
     </li>
-    <li class="sidebar-item {{ Request::is('*produk*') ? 'active' : '' }}">
+    {{-- <li class="sidebar-item {{ Request::is('*produk*') ? 'active' : '' }}">
         <a href="" class='sidebar-link'>
             <i class="bi bi-tags-fill"></i>
             <span>Produk & Layanan</span>
         </a>
-    </li>
+    </li> --}}
 </ul>
