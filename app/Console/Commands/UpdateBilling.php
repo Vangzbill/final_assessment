@@ -51,7 +51,7 @@ class UpdateBilling extends Command
 
                 // if (!$existingBilling) {
                 $ppn = round($nodelink->total_biaya * 0.11);
-                $totalAkhir = $nodelink->total_biaya + $ppn;
+                $totalAkhir = $nodelink->total_biaya;
 
                 BillingRevenue::create([
                     'kontrak_nodelink_id' => $nodelink->id,
