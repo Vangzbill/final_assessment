@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -116,10 +117,11 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
-            <img src="assets/images/logo_dark.png" alt="logo xyz" class="logo"/>
+            <img src="assets/images/logo_dark.png" alt="logo xyz" class="logo" />
             <h1>Rincian Pemesanan</h1>
             <p><strong>Nomor Order:</strong> {{ $data['unique_order'] }}</p>
             <p><strong>Tanggal:</strong> {{ $data['order_date'] }}</p>
@@ -147,10 +149,10 @@
                 <span class="cost-label">Deposit Layanan</span>
                 <span class="cost-value">Rp {{ number_format($data['rincian']['deposit_layanan'], 0, ',', '.') }}</span>
             </div>
-            <div class="cost-row">
+            {{-- <div class="cost-row">
                 <span class="cost-label">PPN</span>
                 <span class="cost-value">Rp {{ number_format($data['rincian']['ppn'], 0, ',', '.') }}</span>
-            </div>
+            </div> --}}
             <div class="cost-row total">
                 <span class="cost-label">Total Biaya</span>
                 <span class="cost-value">Rp {{ number_format($data['rincian']['total_biaya'], 0, ',', '.') }}</span>
@@ -158,4 +160,5 @@
         </div>
     </div>
 </body>
+
 </html>

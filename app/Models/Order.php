@@ -151,7 +151,7 @@ class Order extends Model
                 'deposit_layanan' => $harga_layanan,
                 'biaya_pengiriman' => 0,
                 'ppn' => ($harga_perangkat * 0.11) + ($harga_layanan * 0.11),
-                'total_keseluruhan' => $harga_perangkat + ($harga_perangkat * 0.11) + $harga_layanan + ($harga_layanan * 0.11) + 16000,
+                'total_keseluruhan' => $harga_perangkat + $harga_layanan + 16000,
             ]);
 
             // $proforma_invoice_layanan = ProformaInvoice::create([
@@ -285,7 +285,7 @@ class Order extends Model
         $biaya_layanan = optional($order->layanan)->harga_layanan;
         $ppn = $order->proforma_invoice_item->sum('nilai_ppn');
 
-        $total_biaya = $biaya_perangkat + $biaya_layanan + $ppn + 16000;
+        $total_biaya = $biaya_perangkat + 16000;
 
         if ($order) {
             return [
@@ -481,7 +481,7 @@ class Order extends Model
                     break;
                 case 'Pesanan Selesai':
                     $baseStatus['popup'] = 1;
-                    if($existingStatus){
+                    if ($existingStatus) {
                         $baseStatus['popup'] = $popup ? 1 : 0;
                     }
                     break;
@@ -521,7 +521,7 @@ class Order extends Model
         $biaya_layanan = optional($order->layanan)->harga_layanan;
         $ppn = $order->proforma_invoice_item->sum('nilai_ppn');
 
-        $total_biaya = $biaya_perangkat + $biaya_layanan + $ppn + 16000;
+        $total_biaya = $biaya_perangkat + 16000;
 
         $data = [
             'order_id' => $order->id,
@@ -590,19 +590,19 @@ class Order extends Model
 
     public static function tracking($resi)
     {
-        $url_jne = env('URL_JNE');
-        $username = env('USERNAME_JNE');
-        $api_key = env('API_KEY_JNE');
+        $url_jne = config('delivery.url_jne');
+        $username = config('delivery.username');
+        $api_key = config('delivery.api_key');
 
         $response = Http::withOptions(['verify' => false])
-        ->asForm()
-        ->withHeaders([
-            'Accept' => 'application/json',
-        ])
-        ->post($url_jne . 'list/v1/cnote/' . $resi, [
-            'username' => $username,
-            'api_key' => $api_key,
-        ]);
+            ->asForm()
+            ->withHeaders([
+                'Accept' => 'application/json',
+            ])
+            ->post($url_jne . 'list/v1/cnote/' . $resi, [
+                'username' => $username,
+                'api_key' => $api_key,
+            ]);
         if ($response->successful()) {
             $tracking = response()->json($response->json());
             $detail = $tracking->getData()->history;

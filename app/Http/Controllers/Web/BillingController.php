@@ -201,7 +201,7 @@ class BillingController extends Controller
 
         $deposit = $nodelink->order->proforma_invoice->value('deposit_layanan');
         $ppn = round($deposit * 0.11);
-        $totalAkhir = $deposit + $ppn;
+        $totalAkhir = $deposit;
 
         BillingRevenue::create([
             'kontrak_nodelink_id' => $nodelink->id,

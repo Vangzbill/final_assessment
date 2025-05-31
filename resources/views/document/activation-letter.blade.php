@@ -101,7 +101,8 @@
                 </td>
                 <td style="width: 80%; text-align: center">
                     <div style="display: inline-block">
-                        <span style="display: block; font-size: 2rem" class="bold-700">Surat Pernyataan Aktivasi Layanan</span>
+                        <span style="display: block; font-size: 2rem" class="bold-700">Surat Pernyataan Aktivasi
+                            Layanan</span>
                         <hr style="margin: 5px 0">
                         <span style="display: block; font-size: 0.9rem">{{ $order['nomor_kontrak'] }}</span>
                     </div>
@@ -175,7 +176,7 @@
                         <p><strong>PT. XYZ</strong></p>
                         {{-- <img src="assets/images/spa-ttd.jpg" width="100px" height="75px" alt="ttd" /> --}}
                         <h1 style="font-size: 60;">{{ '' }}</h1>
-                        <p><strong>Si X</strong></p>
+                        <p><strong>Mr XYZ</strong></p>
                         <hr>
                         <p>Manager Service Activation</p>
                     </td>
@@ -188,7 +189,7 @@
                         @else
                             <h1 style="font-size: 37;">{{ '' }}</h1>
                         @endif
-                            <strong>{{ $order['nama'] }}</strong>
+                        <strong>{{ $order['nama'] }}</strong>
                         </p>
                     </td>
                 </tr>
