@@ -155,6 +155,8 @@
         <p>
             <strong>No. Invoice:</strong>
             INV/{{ $order['tahun'] }}/{{ $order['bulan'] }}/{{ $order['no_proforma_invoice'] }}<br>
+            <strong>No. Invoice:</strong>
+            INV/{{ $order['tahun'] }}/{{ $order['bulan'] }}/{{ $order['no_proforma_invoice'] }}<br>
             <strong>Tanggal tagih:</strong> {{ $order['tanggal_tagih'] }}<br>
             <strong>Periode:</strong> {{ $order['periode'] }}<br>
             <strong>Jatuh Tempo:</strong> {{ $order['jatuh_tempo'] }}
@@ -199,8 +201,10 @@
                 <td>Rp. {{ $order['total_tagihan'] }}</td>
             </tr>
             {{-- <tr>
+            {{-- <tr>
                 <td>PPN 11%</td>
                 <td>Rp. {{ $order['total_ppn'] }}</td>
+            </tr> --}}
             </tr> --}}
             <tr>
                 <td><strong>Total</strong></td>
