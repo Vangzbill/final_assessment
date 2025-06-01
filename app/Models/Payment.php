@@ -87,10 +87,10 @@ class Payment extends Model
     public static function paymentBillingMidtrans($billing_id, $user)
     {
         try {
-            $server_key = env('MIDTRANS_SERVER_KEY');
-            $client_key = env('MIDTRANS_CLIENT_KEY');
-            Config::$serverKey = $server_key;
-            Config::$clientKey = $client_key;
+            $serverKey = config('midtrans.server_key');
+            $clientKey = config('midtrans.client_key');
+            Config::$serverKey = $serverKey;
+            Config::$clientKey = $clientKey;
             Config::$isProduction = false;
             $billing = BillingRevenue::find($billing_id);
             $gross_amount = $billing->total_akhir;
@@ -136,7 +136,7 @@ class Payment extends Model
             $snapToken = Http::withOptions(['verify' => false])->withHeaders([
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
-                'Authorization' => 'Basic ' . base64_encode($server_key . ':'),
+                'Authorization' => 'Basic ' . base64_encode($serverKey . ':'),
             ])->post('https://app.sandbox.midtrans.com/snap/v1/transactions', $data_order)->json()['token'];
 
             $payment_url = 'https://app.sandbox.midtrans.com/snap/v4/redirection/' . $snapToken . '#/payment-list';
