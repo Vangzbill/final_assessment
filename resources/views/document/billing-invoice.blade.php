@@ -196,16 +196,16 @@
 
     <div class="total-section">
         <table>
-            <tr>
+            {{-- <tr>
                 <td>Subtotal</td>
                 <td>Rp. {{ $order['total_tagihan'] }}</td>
-            </tr>
+            </tr> --}}
             {{-- <tr>
             {{-- <tr>
                 <td>PPN 11%</td>
                 <td>Rp. {{ $order['total_ppn'] }}</td>
             </tr> --}}
-            </tr> --}}
+            {{-- </tr> --}}
             <tr>
                 <td><strong>Total</strong></td>
                 <td><strong>Rp. {{ $order['total_akhir'] }}</strong></td>
@@ -228,8 +228,7 @@
         <div class="signature-box">
             <div class="signature-line"></div>
             <p>Disetujui oleh</p>
-            <img src="{{ asset('assets/images/invoice_billing.jpg') }}" width="80" height="30"
-                alt="signature" />
+            <img src="assets/images/invoice_billing-no-bg.png" width="80" height="30" alt="signature" />
             <p>Divisi Billing PT XYZ</p>
         </div>
     </div>
