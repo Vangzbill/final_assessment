@@ -149,14 +149,16 @@
                 <span class="cost-label">Deposit Layanan</span>
                 <span class="cost-value">Rp {{ number_format($data['rincian']['deposit_layanan'], 0, ',', '.') }}</span>
             </div>
-            {{-- <div class="cost-row">
-                <span class="cost-label">PPN</span>
-                <span class="cost-value">Rp {{ number_format($data['rincian']['ppn'], 0, ',', '.') }}</span>
-            </div> --}}
-            <div class="cost-row total">
-                <span class="cost-label">Total Biaya</span>
-                <span class="cost-value">Rp {{ number_format($data['rincian']['total_biaya'], 0, ',', '.') }}</span>
+            <div class="cost-row">
+                <span class="cost-label">Biaya Asuransi</span>
+                <span class="cost-value">Rp {{ number_format($data['rincian']['biaya_asuransi'], 0, ',', '.') }}</span>
             </div>
+            <div class="cost-row total">
+                <span class="cost-label">Total Keseluruhan</span>
+                <span class="cost-value">Rp
+                    {{ number_format($data['rincian']['total_keseluruhan'], 0, ',', '.') }}</span>
+            </div>
+
         </div>
     </div>
 </body>
