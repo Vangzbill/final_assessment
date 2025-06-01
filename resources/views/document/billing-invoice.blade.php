@@ -123,7 +123,6 @@
 
         .signature-line {
             border-top: 1px solid #000;
-            margin-top: 70px;
         }
     </style>
 </head>
