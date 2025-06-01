@@ -191,29 +191,36 @@ class BillingController extends Controller
 
     private function createBillingIfNotExists($nodelink)
     {
-        $bulanIni = Carbon::now()->startOfMonth();
+        $maxLoop = 24;
+        $bulanCek = Carbon::now()->startOfMonth();
 
-        $exists = BillingRevenue::where('order_id', $nodelink->order_id)
-            ->whereDate('tanggal_tagih', $bulanIni)
-            ->exists();
+        for ($i = 0; $i < $maxLoop; $i++) {
+            $exists = BillingRevenue::where('order_id', $nodelink->order_id)
+                ->whereDate('tanggal_tagih', $bulanCek)
+                ->exists();
 
-        if ($exists) return false;
+            if (!$exists) {
+                $deposit = $nodelink->order->proforma_invoice->value('deposit_layanan');
+                $ppn = round($deposit * 0.11);
+                $totalAkhir = $deposit;
 
-        $deposit = $nodelink->order->proforma_invoice->value('deposit_layanan');
-        $ppn = round($deposit * 0.11);
-        $totalAkhir = $deposit;
+                BillingRevenue::create([
+                    'kontrak_nodelink_id' => $nodelink->id,
+                    'order_id' => $nodelink->order_id,
+                    'tanggal_tagih' => $bulanCek,
+                    'total_tagihan' => $deposit,
+                    'total_ppn' => $ppn,
+                    'total_akhir' => $totalAkhir,
+                    'jatuh_tempo' => $bulanCek->copy()->endOfMonth(),
+                    'status' => 'Unpaid'
+                ]);
 
-        BillingRevenue::create([
-            'kontrak_nodelink_id' => $nodelink->id,
-            'order_id' => $nodelink->order_id,
-            'tanggal_tagih' => $bulanIni,
-            'total_tagihan' => $deposit,
-            'total_ppn' => $ppn,
-            'total_akhir' => $totalAkhir,
-            'jatuh_tempo' => Carbon::now()->endOfMonth(),
-            'status' => 'Unpaid'
-        ]);
+                return true;
+            }
 
-        return true;
+            $bulanCek->addMonthNoOverflow();
+        }
+
+        return false;
     }
 }
