@@ -285,7 +285,7 @@ class Order extends Model
         $biaya_perangkat = optional($order->proforma_invoice_item->first()->produk)->harga_produk;
         $ppn = $order->proforma_invoice_item->sum('nilai_ppn');
 
-        $total_biaya = $biaya_perangkat + 16000;
+        $total_biaya = $biaya_perangkat + $biaya_layanan + 16000;
 
         if ($order) {
             return [
