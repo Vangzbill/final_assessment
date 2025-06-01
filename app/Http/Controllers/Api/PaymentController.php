@@ -94,9 +94,9 @@ class PaymentController extends Controller
         $user = JWTAuth::authenticate($token);
 
         $order = Order::where('id', $request->order_id)
-                     ->where('customer_id', $user->id)
-                     ->with('produk', 'layanan')
-                     ->first();
+            ->where('customer_id', $user->id)
+            ->with('produk', 'layanan')
+            ->first();
 
         if (!$order) {
             return $this->generateResponse('error', 'Order not found', null, 404);
@@ -186,9 +186,9 @@ class PaymentController extends Controller
             $billing_revenue->tanggal_tagih = now();
             $billing_revenue->total_ppn = ($order->produk->harga_perangkat * 0.11) + ($order->layanan->harga_layanan * 0.11);
             $billing_revenue->total_tagihan = $order->total_harga;
-            $billing_revenue->total_akhir = $order->total_harga + 16000;
+            $billing_revenue->total_akhir = $order->total_harga;
             $billing_revenue->jatuh_tempo = now()->addDays(10);
-        $billing_revenue->status = 'Paid';
+            $billing_revenue->status = 'Paid';
             $billing_revenue->tanggal_bayar = now();
             $billing_revenue->save();
         } else {

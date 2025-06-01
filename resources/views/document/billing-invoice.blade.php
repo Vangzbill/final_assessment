@@ -208,27 +208,27 @@
             {{-- </tr> --}}
             <tr>
                 <td><strong>Total</strong></td>
-                <td><strong>Rp. {{ $order['total_akhir'] }}</strong></td>
+                <td><strong>Rp. {{ $order['total_tagihan'] }}</strong></td>
             </tr>
         </table>
     </div>
 
     <div class="clear"></div>
 
-    <div class="payment-info">
-        {{-- <p><strong>Informasi Pembayaran:</strong></p>
+    {{-- <div class="payment-info"> --}}
+    {{-- <p><strong>Informasi Pembayaran:</strong></p>
         <p>
             Bank [Nama Bank]<br>
             No. Rekening: [Nomor Rekening]<br>
             Atas Nama: PT Layanan Satelit
         </p> --}}
-    </div>
+    {{-- </div> --}}
 
     <div class="signature">
         <div class="signature-box">
-            <div class="signature-line"></div>
             <p>Disetujui oleh</p>
-            <img src="assets/images/invoice_billing-no-bg.png" width="80" height="30" alt="signature" />
+            <img src="assets/images/invoice_billing-no-bg.png" width="100px" height="75px" alt="signature" />
+            <div class="signature-line"></div>
             <p>Divisi Billing PT XYZ</p>
         </div>
     </div>
