@@ -24,73 +24,74 @@ class DocumentController extends Controller
 
     public function invoice($id)
     {
-        try{
+        try {
             $user = JWTAuth::parseToken()->authenticate();
             $order = Order::getOrder($id, $user->id);
-            if(!$order){
+            if (!$order) {
                 return $this->generateResponse('error', 'Order not found', null, 404);
             }
 
             $pdf = Pdf::loadView('document.invoice', ['order' => $order]);
-            return $pdf->download('invoice-'.$order['order_id'].'.pdf');
-        }catch(\Exception $e){
+            return $pdf->download('invoice-' . $order['order_id'] . '.pdf');
+        } catch (\Exception $e) {
             return $this->generateResponse('error', $e->getMessage(), null, 500);
         }
     }
 
     public function acceptanceLetter($id)
     {
-        try{
+        try {
             $user = JWTAuth::parseToken()->authenticate();
             $order = Order::getOrder($id, $user->id);
-            if(!$order){
+            if (!$order) {
                 return $this->generateResponse('error', 'Order not found', null, 404);
             }
 
             $pdf = Pdf::loadView('document.acceptance-letter', ['order' => $order]);
-            return $pdf->download('acceptance-letter-'.$order['unique_order'].'.pdf');
-        }catch(\Exception $e){
+            return $pdf->download('acceptance-letter-' . $order['unique_order'] . '.pdf');
+        } catch (\Exception $e) {
             return $this->generateResponse('error', $e->getMessage(), null, 500);
         }
     }
 
     public function activationLetter($id)
     {
-        try{
+        try {
             $user = JWTAuth::parseToken()->authenticate();
             $order = Order::getActivation($id, $user->id);
-            if(!$order){
+            if (!$order) {
                 return $this->generateResponse('error', 'Order not found', null, 404);
             }
 
             $pdf = Pdf::loadView('document.activation-letter', ['order' => $order]);
-            return $pdf->download('activation-letter-'.$order['unique_order'].'.pdf');
-        }catch(\Exception $e){
+            return $pdf->download('activation-letter-' . $order['unique_order'] . '.pdf');
+        } catch (\Exception $e) {
             return $this->generateResponse('error', $e->getMessage(), null, 500);
         }
     }
 
     public function orderDocument($id)
     {
-        try{
+        try {
             $user = JWTAuth::parseToken()->authenticate();
             $order = Order::getOrderSummary($id, $user->id);
-            if(!$order){
+            if (!$order) {
                 return $this->generateResponse('error', 'Order not found', null, 404);
             }
 
             $pdf = Pdf::loadView('document.order-doc', ['data' => $order]);
-            return $pdf->download('order-document-'.$order['unique_order'].'.pdf');
-        }catch(\Exception $e){
+            return $pdf->download('order-document-' . $order['unique_order'] . '.pdf');
+        } catch (\Exception $e) {
             return $this->generateResponse('error', $e->getMessage(), null, 500);
         }
     }
 
-    public function signature(Request $request){
-        try{
+    public function signature(Request $request)
+    {
+        try {
             $user = JWTAuth::parseToken()->authenticate();
             $order = Order::where('id', $request->order_id)->where('customer_id', $user->id)->first();
-            if(!$order){
+            if (!$order) {
                 return $this->generateResponse('error', 'Order not found', null, 404);
             }
 
@@ -117,7 +118,7 @@ class DocumentController extends Controller
             DB::commit();
 
             return $this->generateResponse('success', 'Signature saved', 'Surat telah ditandatangani', 200);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             DB::rollBack();
             return $this->generateResponse('error', $e->getMessage(), null, 500);
         }
@@ -125,16 +126,17 @@ class DocumentController extends Controller
 
     public function billingInvoice($id)
     {
-        try{
+        try {
             $user = JWTAuth::parseToken()->authenticate();
             $order = BillingRevenue::getBilling($id, $user->id);
-            if(!$order){
+
+            if (!$order) {
                 return $this->generateResponse('error', 'Order not found', null, 404);
             }
 
             $pdf = Pdf::loadView('document.billing-invoice', ['order' => $order]);
-            return $pdf->download('billing-invoice-'.$order['no_proforma_invoice'].'.pdf');
-        }catch(\Exception $e){
+            return $pdf->download('billing-invoice-' . $order['no_proforma_invoice'] . '.pdf');
+        } catch (\Exception $e) {
             return $this->generateResponse('error', $e->getMessage(), null, 500);
         }
     }

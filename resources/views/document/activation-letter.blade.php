@@ -174,7 +174,7 @@
                     <td style="width: 45%;">
                         <p><strong>PENYEDIA</strong></p>
                         <p><strong>PT. XYZ</strong></p>
-                        <img src={{ asset('assets/images/spa.jpg') }} width="100px" height="75px" alt="ttd" />
+                        <img src='assets/images/spa-no-bg.png' width="100px" height="75px" alt="ttd" />
                         {{-- <h1 style="font-size: 60;">{{ '' }}</h1> --}}
                         <p><strong>Mr XYZ</strong></p>
                         <hr>

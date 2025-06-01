@@ -42,12 +42,12 @@ class BillingRevenue extends Model
     {
         $billing_data = BillingRevenue::with([
             'order',
-            'kontrak_nodelink.kontrak_layanan.kontrak.order.layanan',
-            'kontrak_nodelink.kontrak_layanan.kontrak.order.customer',
-            'kontrak_nodelink.kontrak_layanan.kontrak.order.proforma_invoice',
+            'order.layanan',
+            'order.customer',
+            'order.proforma_invoice',
         ])
             ->where('id', $id)
-            ->whereHas('kontrak_nodelink.kontrak_layanan.kontrak.order', function ($query) use ($user_id) {
+            ->whereHas('order', function ($query) use ($user_id) {
                 $query->where('customer_id', $user_id);
             })
             ->first();
@@ -56,7 +56,7 @@ class BillingRevenue extends Model
             $customer = $billing_data->order->customer->first();
             $no_proforma_invoice = $proformaInvoice ? $proformaInvoice->no_proforma_invoice : 'N/A';
 
-            $nama_layanan = $billing_data->kontrak_nodelink->kontrak_layanan->kontrak->order->layanan->nama_layanan ?? 'N/A';
+            $nama_layanan = $billing_data->order->layanan->nama_layanan ?? 'N/A';
             $nama_customer = $customer ? $customer->nama_perusahaan : 'N/A';
             $alamat_customer = $customer ? $customer->alamat : 'N/A';
             $bulan = Carbon::parse($billing_data->tanggal_tagih)->format('mm');
