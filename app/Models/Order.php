@@ -125,7 +125,7 @@ class Order extends Model
                 'provinsi' => $request['provinsi'] ? $request['provinsi'] : null,
                 'kabupaten' => $request['kabupaten'] ? $request['kabupaten'] : null,
                 'alamat_lengkap' => $request['alamat_lengkap'] ? $request['alamat_lengkap'] : null,
-                'nomor_resi' => $request['jenis_pengiriman'] == 'JNE' ? '0868332400000053' : null,
+                'nomor_resi' => $request['jenis_pengiriman'] == 'JNE' ? 'TLJR3DXKKYGY074Q' : null,
             ]);
 
             $riwayat_order = OrderStatusHistory::create([
@@ -612,5 +612,47 @@ class Order extends Model
         } else {
             return response()->json($response->json(), 400);
         }
+    }
+
+    public static function tracingResi($resi)
+    {
+        $biteshipUrl = config('biteship.biteship_url');
+        $biteshipAuthToken = config('biteship.biteship_auth_token');
+
+        $response = Http::withOptions(['verify' => false])
+            ->withHeaders([
+                'Authorization' => $biteshipAuthToken,
+                'Accept' => 'application/json',
+            ])
+            ->get($biteshipUrl . '/v1/trackings/' . $resi . '/couriers/jne');
+
+        if ($response->successful()) {
+            $rawHistory = $response->json('history');
+            if (!$rawHistory) {
+                return null;
+            }
+
+            $mapped = collect($rawHistory)->map(function ($item) {
+                return [
+                    'date' => \Carbon\Carbon::parse($item['updated_at'])->format('d-m-Y H:i'),
+                    'desc' => $item['note'],
+                    'code' => static::mapStatusToCode($item['status'], $item['note']), // optional: mapping
+                ];
+            });
+
+            return $mapped->toArray();
+        }
+
+        return null;
+    }
+
+    protected static function mapStatusToCode($status, $note)
+    {
+        return match ($status) {
+            'dropping_off' => 'OP1',
+            'on_hold' => 'PU1',
+            'delivered' => 'D01',
+            default => 'UNKN',
+        };
     }
 }

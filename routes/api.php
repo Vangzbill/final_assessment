@@ -53,7 +53,8 @@ Route::middleware('add.ngrok.header')->group(function () {
         Route::post('activate', [OrderController::class, 'activate']);
         Route::post('delivered', [OrderController::class, 'delivered']);
         Route::post('address', [OrderController::class, 'address']);
-        Route::get('tracking/{resi}', [OrderController::class, 'tracking']);
+        Route::get('tracking/{resi}', [OrderController::class, 'tracingResi']);
+        Route::get('tracing-resi/{resi}', [OrderController::class, 'tracking']);
     });
 
     Route::prefix('wilayah')->group(function () {
