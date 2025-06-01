@@ -102,7 +102,7 @@
         .total-section {
             float: right;
             width: 300px;
-            margin-top: 20px;
+            margin-top: 5px;
         }
 
         .footer {
@@ -111,7 +111,7 @@
         }
 
         .signature {
-            margin-top: 50px;
+            margin-top: 20px;
             display: flex;
             justify-content: space-between;
         }
