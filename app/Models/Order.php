@@ -117,7 +117,7 @@ class Order extends Model
                 'alamat_customer_id' => 0,
                 'cp_customer_id' => $cp_customer->id,
                 'quantity' => 1,
-                'total_harga' => ($harga_perangkat * 0.11) + $harga_layanan + $harga_perangkat + ($harga_layanan * 0.11) + 16000,
+                'total_harga' => $harga_layanan + $harga_perangkat + 16000,
                 'order_date' => Carbon::now(),
                 'unique_order' => 'ORD' . $userId . '-' . Carbon::now()->format('YmdHis'),
                 'sn_kit' => 'KITSN' . $userId . '-' . (Order::max('id') + 1) . '-' . Carbon::now()->format('YmdHis'),
@@ -277,15 +277,15 @@ class Order extends Model
 
         $biaya_layanan = optional($order->layanan)->harga_layanan;
         if ((float) $order->total_harga < 16000) {
-            $total_keseluruhan = $order->total_harga + $biaya_layanan + 16000;
+            $total_keseluruhan = $order->total_harga + 16000;
         } else {
-            $total_keseluruhan = $order->total_harga + $biaya_layanan;
+            $total_keseluruhan = $order->total_harga;
         }
 
         $biaya_perangkat = optional($order->proforma_invoice_item->first()->produk)->harga_produk;
         $ppn = $order->proforma_invoice_item->sum('nilai_ppn');
 
-        $total_biaya = $biaya_perangkat + $biaya_layanan + 16000;
+        $total_biaya = $biaya_perangkat + 16000;
 
         if ($order) {
             return [
@@ -513,9 +513,9 @@ class Order extends Model
         $biaya_layanan = optional($order->layanan)->harga_layanan;
 
         if ((float) $order->total_harga < 16000) {
-            $total_keseluruhan = $order->total_harga + $biaya_layanan + 16000;
+            $total_keseluruhan = $order->total_harga + 16000;
         } else {
-            $total_keseluruhan = $order->total_harga + $biaya_layanan;
+            $total_keseluruhan = $order->total_harga;
         }
 
         $biaya_perangkat = optional($order->proforma_invoice_item->first()->produk)->harga_produk;
