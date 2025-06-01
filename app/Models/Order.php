@@ -275,14 +275,14 @@ class Order extends Model
             ->where('customer_id', $userId)
             ->first();
 
+        $biaya_layanan = optional($order->layanan)->harga_layanan;
         if ((float) $order->total_harga < 16000) {
-            $total_keseluruhan = $order->total_harga + 16000;
+            $total_keseluruhan = $order->total_harga + $biaya_layanan + 16000;
         } else {
-            $total_keseluruhan = $order->total_harga;
+            $total_keseluruhan = $order->total_harga + $biaya_layanan;
         }
 
         $biaya_perangkat = optional($order->proforma_invoice_item->first()->produk)->harga_produk;
-        $biaya_layanan = optional($order->layanan)->harga_layanan;
         $ppn = $order->proforma_invoice_item->sum('nilai_ppn');
 
         $total_biaya = $biaya_perangkat + 16000;
@@ -510,15 +510,15 @@ class Order extends Model
         $formatTanggal = function ($tanggal) {
             return Carbon::parse($tanggal)->translatedFormat('d F Y');
         };
+        $biaya_layanan = optional($order->layanan)->harga_layanan;
 
         if ((float) $order->total_harga < 16000) {
-            $total_keseluruhan = $order->total_harga + 16000;
+            $total_keseluruhan = $order->total_harga + $biaya_layanan + 16000;
         } else {
-            $total_keseluruhan = $order->total_harga;
+            $total_keseluruhan = $order->total_harga + $biaya_layanan;
         }
 
         $biaya_perangkat = optional($order->proforma_invoice_item->first()->produk)->harga_produk;
-        $biaya_layanan = optional($order->layanan)->harga_layanan;
         $ppn = $order->proforma_invoice_item->sum('nilai_ppn');
 
         $total_biaya = $biaya_perangkat + 16000;
@@ -605,6 +605,7 @@ class Order extends Model
             ]);
         if ($response->successful()) {
             $tracking = response()->json($response->json());
+            dd($tracking, $url_jne);
             $detail = $tracking->getData()->history;
 
             return $detail;

@@ -224,7 +224,8 @@
         <div class="signature-box">
             <div class="signature-line"></div>
             <p>Disetujui oleh</p>
-
+            <img src="{{ asset('assets/images/invoice_billing.jpg') }}" width="80" height="30"
+                alt="signature" />
             <p>Divisi Billing PT XYZ</p>
         </div>
     </div>
